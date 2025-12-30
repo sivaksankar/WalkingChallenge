@@ -1,0 +1,30 @@
+# Netlify configuration for the Walking Challenge Next.js app
+# Uses the official Netlify Next.js plugin to handle serverless functions and Next features
+
+[build]
+  # Build command for the Next.js app
+  command = "npm run build"
+  # For the Next.js plugin, publish the repository root
+  publish = "."
+  # Build-time functions directory (plugin will manage serverless handlers)
+  functions = ".netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Production environment variables — DO NOT commit secrets here.
+# Add these in the Netlify site UI (Site settings → Build & deploy → Environment variables)
+[context.production.environment]
+  NEXTAUTH_SECRET = "" # e.g. a long random string
+  NEXTAUTH_URL = "https://<your-netlify-site>.netlify.app"
+
+  NEXT_PUBLIC_FIREBASE_API_KEY = ""
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID = ""
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = ""
+  NEXT_PUBLIC_FIREBASE_APP_ID = ""
+
+  FIREBASE_ADMIN_PROJECT_ID = ""
+  FIREBASE_ADMIN_CLIENT_EMAIL = ""
+  FIREBASE_ADMIN_PRIVATE_KEY = "" # Use Netlify's secure editor / escape newlines as \n
+
+# Optional: add other env vars referenced in your application here as placeholders
