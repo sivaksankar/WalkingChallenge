@@ -145,7 +145,6 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       },
       secret: nextAuthSecret,
       debug: process.env.NODE_ENV === 'development',
-      trustHost: true,
     };
   } catch (error) {
     console.error('Error in getAuthOptions:', error);
