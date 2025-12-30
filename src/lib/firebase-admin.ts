@@ -71,8 +71,9 @@ export const getFirebaseAdmin = async () => {
   return adminDb;
 };
 
-// Initialize and export the default instances
-const { adminApp: app, adminDb: db, adminAuth: auth } = initFirebaseAdmin();
-
-export { app, db, auth };
+// Note: we intentionally do NOT call initFirebaseAdmin at module
+// import time because Next.js may import server modules during
+// static generation (build) when environment variables may not
+// be available. Instead initialize lazily via `getAdmin` or
+// `getFirebaseAdmin` inside request handlers at runtime.
 export default initFirebaseAdmin;

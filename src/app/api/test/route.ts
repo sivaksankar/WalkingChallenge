@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdmin } from '@/lib/firebase-admin';
 
 export async function GET() {
   console.log('\n=== Starting Test Request ===');
@@ -11,7 +11,8 @@ export async function GET() {
 
   try {
     console.log('\nAttempting to access Firestore...');
-    const usersRef = adminDb!.collection('users');
+    const { adminDb } = await getAdmin();
+    const usersRef = adminDb.collection('users');
     console.log('Collection reference created');
     
     console.log('Executing query...');
