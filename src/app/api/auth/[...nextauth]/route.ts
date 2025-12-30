@@ -2,8 +2,28 @@
 import { getAuthOptions } from '@/auth.config';
 import NextAuth from 'next-auth/next';
 
+export const dynamic = 'force-dynamic';
+
 const handler = async (req: Request, context: any) => {
   try {
+    // Get the host from request headers (Netlify sets X-Forwarded-Host)
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    
+    if (!host) {
+      console.error('Unable to determine host from request headers');
+      return new Response(
+        JSON.stringify({ error: 'Unable to determine host' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Override NEXTAUTH_URL if not explicitly set
+    if (!process.env.NEXTAUTH_URL) {
+      process.env.NEXTAUTH_URL = `${proto}://${host}`;
+      console.log('Set NEXTAUTH_URL from headers:', process.env.NEXTAUTH_URL);
+    }
+
     const authOptions = await getAuthOptions();
     return await NextAuth(authOptions)(req, context);
   } catch (error) {
