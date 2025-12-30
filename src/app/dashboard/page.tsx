@@ -110,8 +110,8 @@ function StatGrid({ session }: { session: any }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <p className="text-sm font-medium text-gray-500">Today's Steps</p>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <p className="text-sm font-medium text-gray-500">Today&apos;s Steps</p>
         <p className="text-2xl font-bold mt-1">{todayLoading ? '...' : (todaySteps ?? 0).toLocaleString()}</p>
         <p className="text-xs text-gray-500 mt-1">{todayLoading ? '' : '+0% from yesterday'}</p>
       </div>

@@ -70,7 +70,7 @@ export function StepCounter() {
       <div className="space-y-4">
         <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div>
-            <p className="text-sm font-medium text-gray-500">Today's Steps</p>
+            <p className="text-sm font-medium text-gray-500">Today&apos;s Steps</p>
             <p className="text-2xl font-bold text-gray-900">{steps.toLocaleString()}</p>
           </div>
           <div className="w-24">
