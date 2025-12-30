@@ -18,7 +18,11 @@
 # Add these in the Netlify site UI (Site settings → Build & deploy → Environment variables)
 [context.production.environment]
   NEXTAUTH_SECRET = "" # e.g. a long random string
-  NEXTAUTH_URL = "https://<your-netlify-site>.netlify.app"
+  NEXTAUTH_URL = "https://nimble-basbousa-d20a87.netlify.app"
+
+  # Google OAuth (set via Netlify UI or CLI)
+  GOOGLE_CLIENT_ID = ""
+  GOOGLE_CLIENT_SECRET = ""
 
   NEXT_PUBLIC_FIREBASE_API_KEY = ""
   NEXT_PUBLIC_FIREBASE_PROJECT_ID = ""
