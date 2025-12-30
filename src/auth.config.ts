@@ -117,14 +117,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
         GoogleProvider({
           clientId: googleClientId,
           clientSecret: googleClientSecret,
-          authorization: {
-            params: {
-              prompt: 'consent',
-              access_type: 'offline',
-              response_type: 'code',
-              scope: 'openid email profile'
-            }
-          }
+          allowDangerousEmailAccountLinking: true,
         }),
       ],
       // Prefer passing the client Firestore instance to the adapter when available.
@@ -146,8 +139,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       session: {
         strategy: 'jwt',
       },
+      pages: {
+        signIn: '/auth/signin',
+        error: '/auth/signin',
+      },
       secret: nextAuthSecret,
       debug: process.env.NODE_ENV === 'development',
+      trustHost: true,
     };
   } catch (error) {
     console.error('Error in getAuthOptions:', error);
