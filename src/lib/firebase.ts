@@ -33,18 +33,16 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+// Default to nulls; set these if we have all required env vars
+let app: any = null;
+let db: any = null;
+let auth: any = null;
+
 if (missingEnv.length) {
   const msg = `Missing required environment variable(s): ${missingEnv.join(', ')}`;
   // During builds (CI) these may legitimately be absent; avoid throwing so the build can complete.
   // Log a clear warning so it can be addressed in the Netlify site settings.
   console.warn(msg);
-
-  // Export null stubs so imports don't break during static build. Runtime on the deployed site
-  // should have the proper NEXT_PUBLIC_* vars and initialize normally in the browser.
-  const app = null as any;
-  const db = null as any;
-  const auth = null as any;
-  export { db, auth, app };
 } else {
   const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -57,7 +55,6 @@ if (missingEnv.length) {
   };
 
   // Initialize Firebase
-  let app;
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   } catch (error) {
@@ -65,8 +62,8 @@ if (missingEnv.length) {
     throw error;
   }
 
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  export { db, auth, app };
+  db = getFirestore(app);
+  auth = getAuth(app);
 }
+
+export { db, auth, app };
