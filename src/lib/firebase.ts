@@ -26,12 +26,6 @@ for (const envVar of requiredEnvVars) {
     missingEnv.push(envVar);
   }
 }
-let missingEnv: string[] = [];
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    missingEnv.push(envVar);
-  }
-}
 
 // Default to nulls; set these if we have all required env vars
 let app: any = null;
