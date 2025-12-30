@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     let userId = userIdParam;
     if (!userId) {
       const options = await getAuthOptions();
-      const session = await _getServerSession(options as any);
+      const session: any = await _getServerSession(options as any);
       if (!session?.user?.id) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
       userId = session.user.id as string;
     }

@@ -47,20 +47,4 @@ export function useLeaderboard(limitCount: number = 10) {
 
   return { leaderboard, isLoading, error };
 }
-
-interface LeaderboardEntry {
-  id: string;
-  name: string;
-  email: string;
-  steps: number;
-  profileImage?: string;
-}
-
-interface UserData extends DocumentData {
-  name: string;
-  email: string;
-  image?: string;
-  steps?: number;
-}
-
-// (old implementation removed)
+ 

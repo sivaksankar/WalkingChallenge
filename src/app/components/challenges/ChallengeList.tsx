@@ -35,7 +35,7 @@ export function ChallengeList() {
     }
     
     try {
-      await joinChallenge(challengeId, session.user.id);
+      await joinChallenge(challengeId);
       // Update local state to reflect the user joined
       setChallenges(challenges.map(challenge => 
         challenge.id === challengeId 

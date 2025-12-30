@@ -1,7 +1,7 @@
 // src/services/challengeService.ts
 import { Challenge } from '@/types/challenge';
 
-export const createChallenge = async (challengeData: Omit<Challenge, 'id' | 'createdAt' | 'participants' | 'isActive'>) => {
+export const createChallenge = async (challengeData: Omit<Challenge, 'id' | 'createdAt' | 'participants' | 'isActive' | 'createdBy'>) => {
   const res = await fetch('/api/challenges', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

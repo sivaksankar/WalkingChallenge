@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     // If no userId supplied, try to derive from session server-side
     if (!resolvedUserId) {
       const options = await getAuthOptions();
-      const session = await _getServerSession(options as any);
+      const session: any = await _getServerSession(options as any);
       if (session?.user?.id) {
         resolvedUserId = session.user.id as string;
       } else if (session?.user?.email) {
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     // Get session
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
@@ -117,7 +117,7 @@ export async function PUT(req: Request) {
     }
 
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }

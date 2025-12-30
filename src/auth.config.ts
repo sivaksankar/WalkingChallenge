@@ -100,7 +100,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       adapterInstance = AdminFirestoreAdapter(adminDb as any);
     } catch (adapterErr) {
       console.error('AdminFirestoreAdapter initialization error:', adapterErr);
-      console.error(adapterErr?.stack);
+      console.error((adapterErr as any)?.stack);
       // Fallback: try client adapter if admin adapter fails
       try {
         const hasClientConfig = !!clientConfig.projectId && !!clientConfig.apiKey;

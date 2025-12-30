@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { ChallengeBadge } from '@/components/challenges/ChallengeBadge';
 import { useEffect, useState } from 'react';
 import { Challenge } from '@/types/challenge';
-import { Challenge } from '@/types/challenge';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {

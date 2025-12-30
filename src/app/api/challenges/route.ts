@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
 
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
 
     // Enforce admin email (as provided)

@@ -32,7 +32,7 @@ export async function GET(req: Request) {
         try {
           const stepsDoc = await adminDb.collection('users').doc(u.id).collection('steps').doc(today).get();
           if (stepsDoc.exists) {
-            const data = stepsDoc.data();
+            const data = stepsDoc.data() || {};
             userStepsMap[u.id] = (data.steps || 0);
           }
         } catch (e) {
