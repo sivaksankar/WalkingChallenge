@@ -6,7 +6,7 @@ import { getServerSession as _getServerSession } from 'next-auth/next';
 export async function GET() {
   try {
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
 
     const { adminDb } = await getAdmin();

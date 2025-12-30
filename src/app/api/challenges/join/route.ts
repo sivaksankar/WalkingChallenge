@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!challengeId) return NextResponse.json({ success: false, error: 'Missing challengeId' }, { status: 400 });
 
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
 
     const { adminDb } = await getAdmin();

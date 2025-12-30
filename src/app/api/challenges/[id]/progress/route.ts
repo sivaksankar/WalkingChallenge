@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const { id } = params;
     const options = await getAuthOptions();
-    const session = await _getServerSession(options as any);
+    const session: any = await _getServerSession(options as any);
     if (!session?.user?.email) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
 
     const { adminDb } = await getAdmin();
