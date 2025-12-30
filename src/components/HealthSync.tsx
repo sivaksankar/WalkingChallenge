@@ -6,8 +6,8 @@ import { Button } from './ui/button';
 export function HealthSync() {
   const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
-  const [appleHealthPermission, setAppleHealthPermission] = useState(false);
-  const [samsungHealthPermission, setSamsungHealthPermission] = useState(false);
+  const [manualSteps, setManualSteps] = useState('');
+  const [showManualEntry, setShowManualEntry] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
@@ -17,6 +17,40 @@ export function HealthSync() {
     setIsIOS(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream);
     setIsAndroid(/android/i.test(userAgent));
   }, []);
+
+  const syncManualSteps = async () => {
+    const steps = parseInt(manualSteps);
+    if (isNaN(steps) || steps < 0) {
+      setMessage('⚠️ Please enter a valid number of steps');
+      return;
+    }
+
+    setSyncing(true);
+    setMessage('');
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch('/api/health/manual/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ steps, date: today })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage(`✅ Synced ${steps.toLocaleString()} steps successfully`);
+        setManualSteps('');
+        setShowManualEntry(false);
+      } else {
+        setMessage(`❌ ${data.error || 'Sync failed'}`);
+      }
+    } catch (error) {
+      setMessage('❌ Failed to sync steps');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const requestAppleHealthPermission = async () => {
     setMessage('');
@@ -143,82 +177,79 @@ export function HealthSync() {
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Sync Health Data</h2>
       <p className="text-gray-600 mb-6">
-        Connect your health app to automatically sync your daily steps.
+        Track your daily steps by syncing from your health app or entering manually.
       </p>
 
-      {/* iOS Section */}
-      {isIOS && (
-        <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🍎</span>
-              <h3 className="font-semibold">Apple Health</h3>
+      {/* Manual Entry Section - Always Available */}
+      <div className="mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">✍️</span>
+          <h3 className="font-semibold">Manual Entry</h3>
+          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">Recommended</span>
+        </div>
+        
+        {!showManualEntry ? (
+          <Button
+            onClick={() => setShowManualEntry(true)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            📝 Enter Steps Manually
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Today&apos;s Steps
+              </label>
+              <input
+                type="number"
+                value={manualSteps}
+                onChange={(e) => setManualSteps(e.target.value)}
+                placeholder="e.g., 8500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                min="0"
+              />
             </div>
-            <span className={`text-xs px-2 py-1 rounded ${appleHealthPermission ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-              {appleHealthPermission ? '✓ Authorized' : 'Not Authorized'}
-            </span>
-          </div>
-          
-          {!appleHealthPermission ? (
-            <Button
-              onClick={requestAppleHealthPermission}
-              className="w-full bg-black hover:bg-gray-800 text-white"
-            >
-              Grant Permission
-            </Button>
-          ) : (
-            <Button
-              onClick={syncAppleHealth}
-              disabled={syncing}
-              className="w-full bg-black hover:bg-gray-800 text-white"
-            >
-              {syncing ? '⏳ Syncing...' : '🔄 Sync Now'}
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* Android Section */}
-      {isAndroid && (
-        <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📱</span>
-              <h3 className="font-semibold">Samsung Health</h3>
+            <div className="flex gap-2">
+              <Button
+                onClick={syncManualSteps}
+                disabled={syncing || !manualSteps}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {syncing ? '⏳ Saving...' : '✅ Save Steps'}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowManualEntry(false);
+                  setManualSteps('');
+                }}
+                className="px-4 bg-gray-300 hover:bg-gray-400 text-gray-700"
+              >
+                Cancel
+              </Button>
             </div>
-            <span className={`text-xs px-2 py-1 rounded ${samsungHealthPermission ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-              {samsungHealthPermission ? '✓ Authorized' : 'Not Authorized'}
-            </span>
           </div>
-          
-          {!samsungHealthPermission ? (
-            <Button
-              onClick={requestSamsungHealthPermission}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Grant Permission
-            </Button>
-          ) : (
-            <Button
-              onClick={syncSamsungHealth}
-              disabled={syncing}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {syncing ? '⏳ Syncing...' : '🔄 Sync Now'}
-            </Button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Desktop/Unsupported Platform */}
-      {!isIOS && !isAndroid && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800 text-sm">
-            <span className="font-semibold">📱 Mobile Device Required</span><br />
-            Health app sync is only available on iOS or Android devices. Please access this page from your mobile device.
-          </p>
+      {/* Health App Integration Info */}
+      <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">📱</span>
+          <div>
+            <p className="font-semibold text-gray-800 mb-2">
+              {isIOS ? '🍎 Apple Health' : isAndroid ? '🤖 Samsung Health' : '📲 Health App'} Integration
+            </p>
+            <p className="text-sm text-gray-700 mb-3">
+              Automatic health app sync requires a native mobile app. This is a web app running in your browser.
+            </p>
+            <div className="text-xs text-gray-600 space-y-1">
+              <p><strong>Current workaround:</strong> Use manual entry above to track your steps</p>
+              <p><strong>Future update:</strong> Native iOS/Android apps will support automatic sync</p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
 
       {message && (
         <div className={`mt-4 p-3 rounded-md ${
@@ -233,13 +264,12 @@ export function HealthSync() {
       )}
 
       <div className="mt-6 p-4 bg-blue-50 rounded-md text-sm text-blue-800">
-        <p className="font-semibold mb-2">📝 How It Works:</p>
+        <p className="font-semibold mb-2">💡 Pro Tips:</p>
         <ul className="list-disc list-inside space-y-1">
-          <li>Grant permission to read your step data</li>
-          <li>Sync automatically pulls your daily steps</li>
-          <li>Data is synced securely to your account</li>
-          <li>Your data is never shared without permission</li>
-          <li>Works best with native mobile apps (iOS/Android)</li>
+          <li>Check your phone&apos;s health app for today&apos;s step count</li>
+          <li>Enter your steps at the end of each day</li>
+          <li>You can also use the step counter button on the dashboard</li>
+          <li>Your data syncs automatically across all your devices</li>
         </ul>
       </div>
     </div>
