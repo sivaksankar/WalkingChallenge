@@ -5,7 +5,9 @@
   # Build command for the Next.js app
   command = "npm run build"
   # For the Next.js plugin, publish the repository root
-  publish = "."
+  # The publish directory must point to Next's build output directory
+  # Use ".next" unless you have a custom `distDir` in `next.config.js`
+  publish = ".next"
   # Build-time functions directory (plugin will manage serverless handlers)
   functions = ".netlify/functions"
 
