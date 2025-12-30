@@ -19,7 +19,11 @@ export const initFirebaseAdmin = () => {
     // Get environment variables
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    // Prefer raw private key, but also support a base64-encoded key to avoid CLI parsing issues
+    let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    if (!privateKey && process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64) {
+      privateKey = Buffer.from(process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64, 'base64').toString('utf8');
+    }
 
     // Validate required environment variables
     if (!projectId || !clientEmail || !privateKey) {
