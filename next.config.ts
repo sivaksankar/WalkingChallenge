@@ -19,6 +19,12 @@ const nextConfig = {
         child_process: false,
         tty: false,
       };
+      // Mark Capacitor as external for client-side builds to avoid bundling issues
+      config.externals = config.externals || [];
+      config.externals.push({
+        '@capacitor/core': '@capacitor/core',
+        '@capgo/capacitor-health': '@capgo/capacitor-health'
+      });
     }
     return config;
   },
@@ -27,6 +33,11 @@ const nextConfig = {
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
     },
   }),
+  // Note: For mobile build, we'll use a separate config that exports static files
+  // and points API calls to the production Netlify backend
+  images: {
+    unoptimized: true,
+  },
   reactStrictMode: true,
   output: 'standalone',
 };
