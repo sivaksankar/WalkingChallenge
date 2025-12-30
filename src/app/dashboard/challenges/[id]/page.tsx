@@ -7,6 +7,7 @@ import { Challenge } from '@/types/challenge';
 import { ChallengeLeaderboard } from '@/components/challenges/ChallengeLeaderboard';
 import { ChallengeProgress } from '@/components/challenges/ChallengeProgress';
 import { StepsChart } from '@/components/StepsChart';
+import { EncouragementMessages } from '@/components/EncouragementMessages';
 import { useEffect, useState } from 'react';
 
 export default function ChallengeDetailPage() {
@@ -80,8 +81,11 @@ export default function ChallengeDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <ChallengeLeaderboard challengeId={challenge.id} />
+            
+            {/* Encouragement Messages */}
+            <EncouragementMessages challengeId={challenge.id} />
           </div>
           <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-lg shadow">

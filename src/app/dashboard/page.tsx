@@ -12,6 +12,8 @@ import { useRouter } from 'next/navigation';
 import { useStepTracking } from '@/hooks/useStepTracking';
 import { useStepHistory } from '@/hooks/useStepHistory';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { InsightsDashboard } from '@/components/InsightsDashboard';
+import { HealthSync } from '@/components/HealthSync';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -49,6 +51,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Steps Chart - Takes 2/3 width on large screens */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Insights Dashboard */}
+            <InsightsDashboard />
+
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
               <h2 className="text-xl font-semibold mb-4">Your Activity</h2>
               <div className="h-80">
@@ -70,6 +75,9 @@ export default function DashboardPage() {
             <StatGrid
               session={session}
             />
+
+            {/* Health Sync */}
+            <HealthSync />
           </div>
 
           {/* Leaderboard - Takes 1/3 width on large screens */}

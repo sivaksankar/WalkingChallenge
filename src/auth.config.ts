@@ -118,6 +118,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
           allowDangerousEmailAccountLinking: true,
+          checks: ['state'],
         }),
       ],
       // Prefer passing the client Firestore instance to the adapter when available.
