@@ -5,9 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Walking Challenge',
   webDir: 'out',
   server: {
-    // For now, the mobile app will load the production web app
-    // This allows us to use all the server-side features
-    // Later we can build a standalone static version if needed
+    // Load the production site inside the native WebView (not the external browser)
+    url: 'https://nimble-basbousa-d20a87.netlify.app',
+    cleartext: false,
   },
   plugins: {
     CapacitorHealth: {
