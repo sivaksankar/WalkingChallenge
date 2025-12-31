@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     // Load the production site inside the native WebView (not the external browser)
     url: 'https://nimble-basbousa-d20a87.netlify.app',
     cleartext: false,
+    androidScheme: 'https',
   },
   plugins: {
     CapacitorHealth: {
