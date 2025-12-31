@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.walkingchallenge.app",
+      "sha256_cert_fingerprints": [
+        "C1:D3:5C:93:CB:9E:A6:C2:CF:FF:03:48:C9:C0:D0:3B:BC:91:A5:9C:21:42:43:26:B3:02:FC:97:8A:7F:F9:06"
+      ]
+    }
+  }
+]
