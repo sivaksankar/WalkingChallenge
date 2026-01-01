@@ -42,3 +42,15 @@ next-env.d.ts
 
 # Firebase service account
 src/config/firebase-admin.json
+
+
+# IDE tools & generators
+icon-generator.html
+tablet-screenshots-generator.html
+
+# Android IDE
+android/.idea/
+
+# Xcode workspace
+ios/App/App.xcodeproj/project.xcworkspace/
+local
