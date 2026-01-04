@@ -1,17 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { decode } from 'next-auth/jwt';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const session = await auth();
-    if (!session?.user?.id) {
+    // Verify Bearer token authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Missing Bearer token' },
         { status: 401 }
       );
     }
 
+    const token = authHeader.substring(7);
+    
+    // Decode the JWT token
+    const decoded = await decode({
+      token,
+      secret: process.env.NEXTAUTH_SECRET || '',
+    });
+
+    if (!decoded?.sub) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const userId = decoded.sub;
     const body = await request.json();
     const { steps, date, source } = body;
 
@@ -22,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`📊 Syncing steps for user ${session.user.id}:`, {
+    console.log(`📊 Syncing steps for user ${userId}:`, {
       steps,
       date,
       source,
@@ -31,7 +47,7 @@ export async function POST(request: NextRequest) {
     // TODO: Store in Firestore
     // const db = admin.firestore();
     // await db.collection('steps').add({
-    //   userId: session.user.id,
+    //   userId,
     //   steps,
     //   date: new Date(date),
     //   source,
@@ -44,13 +60,13 @@ export async function POST(request: NextRequest) {
       data: {
         steps,
         date,
-        userId: session.user.id,
+        userId,
       },
     });
   } catch (error) {
     console.error('❌ Step sync error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
