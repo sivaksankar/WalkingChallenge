@@ -42,7 +42,7 @@ export function InsightsDashboard() {
 
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
@@ -57,7 +57,7 @@ export function InsightsDashboard() {
 
   if (!insights) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <p className="text-gray-500">Unable to load insights. Please try again later.</p>
       </div>
     );
@@ -73,28 +73,28 @@ export function InsightsDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+        <div className="bg-white p-4 rounded-lg shadow-md text-center border border-gray-200">
           <div className="text-3xl font-bold text-blue-600">
             {insights.totalSteps.toLocaleString()}
           </div>
           <div className="text-sm text-gray-600 mt-1">Total Steps</div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+        <div className="bg-white p-4 rounded-lg shadow-md text-center border border-gray-200">
           <div className="text-3xl font-bold text-green-600">
             {insights.avgStepsPerDay.toLocaleString()}
           </div>
           <div className="text-sm text-gray-600 mt-1">Daily Average</div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+        <div className="bg-white p-4 rounded-lg shadow-md text-center border border-gray-200">
           <div className="text-3xl font-bold text-orange-600">
             {insights.currentStreak}
           </div>
           <div className="text-sm text-gray-600 mt-1">Current Streak</div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+        <div className="bg-white p-4 rounded-lg shadow-md text-center border border-gray-200">
           <div className="text-3xl font-bold text-purple-600">
             {insights.maxSteps.toLocaleString()}
           </div>
@@ -103,7 +103,7 @@ export function InsightsDashboard() {
       </div>
 
       {/* Weekly Comparison */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <h3 className="text-xl font-bold mb-4">📈 Weekly Progress</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
@@ -132,7 +132,7 @@ export function InsightsDashboard() {
       </div>
 
       {/* Personalized Messages */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <h3 className="text-xl font-bold mb-4">💡 Personalized Insights</h3>
         <div className="space-y-3">
           {insights.messages.map((message, index) => (
@@ -148,7 +148,7 @@ export function InsightsDashboard() {
 
       {/* Mini Chart */}
       {insights.stepData.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <h3 className="text-xl font-bold mb-4">📉 Last 14 Days</h3>
           <div className="flex items-end justify-between h-40 gap-1">
             {insights.stepData.map((day, index) => {

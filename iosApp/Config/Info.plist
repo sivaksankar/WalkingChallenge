@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Walking Challenge</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Walking Challenge</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>walkingchallenge</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>walkingchallenge</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<integer>1</integer>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>shealth</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Calendar access lets us add challenge reminders.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to personalize your profile.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>We use your step count to power the Walking Challenge leaderboards.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>We update your step goals and achievements in Walking Challenge.</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
+</dict>
+</plist>

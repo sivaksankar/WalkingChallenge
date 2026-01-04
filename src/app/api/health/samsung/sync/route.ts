@@ -3,6 +3,9 @@ import { getAdmin } from '@/lib/firebase-admin';
 import { getAuthOptions } from '@/auth.config';
 import { getServerSession } from 'next-auth/next';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // POST: Sync Samsung Health data
 export async function POST(req: Request) {
   try {

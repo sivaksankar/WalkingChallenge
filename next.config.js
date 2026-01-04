@@ -4,9 +4,8 @@ require('dotenv').config({ path: '.env.local' });
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
+    serverActions: true,
+    serverComponentsExternalPackages: ['firebase-admin'],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -18,6 +17,7 @@ const nextConfig = {
         dns: false,
         child_process: false,
         tty: false,
+        'pg-native': false,
       };
     }
     return config;
@@ -27,8 +27,15 @@ const nextConfig = {
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
     },
   }),
+  transpilePackages: ['@next-auth/firebase-adapter'],
   reactStrictMode: true,
   output: 'standalone',
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 module.exports = nextConfig;

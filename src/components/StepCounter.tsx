@@ -33,7 +33,7 @@ export function StepCounter() {
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Step Tracker</h2>
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -45,7 +45,7 @@ export function StepCounter() {
 
   if (error) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Step Tracker</h2>
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
@@ -64,14 +64,14 @@ export function StepCounter() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
+    <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
       <h2 className="text-xl font-bold mb-4">Step Tracker</h2>
       
       <div className="space-y-4">
         <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div>
             <p className="text-sm font-medium text-gray-500">Today&apos;s Steps</p>
-            <p className="text-2xl font-bold text-gray-900">{steps.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{steps.toLocaleString()}</p>
           </div>
           <div className="w-24">
             <label htmlFor="steps" className="sr-only">Add steps</label>

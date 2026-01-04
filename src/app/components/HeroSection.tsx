@@ -16,19 +16,12 @@ export function HeroSection() {
       
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link href="/login">
-          <Button 
-            size="lg" 
-            className="bg-blue-600 hover:bg-blue-700"
-          >
+          <Button size="lg">
             Start Your Journey
           </Button>
         </Link>
         <Link href="#how-it-works">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
+          <Button variant="outline" size="lg">
             Learn More
           </Button>
         </Link>

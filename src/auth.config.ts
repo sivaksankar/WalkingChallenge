@@ -118,27 +118,45 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
           allowDangerousEmailAccountLinking: true,
-          checks: ['state'],
+          checks: ['none'],
+          authorization: {
+            params: {
+              prompt: 'consent',
+              access_type: 'offline',
+              response_type: 'code',
+            },
+          },
         }),
       ],
       // Prefer passing the client Firestore instance to the adapter when available.
       adapter: adapterInstance,
       callbacks: {
-        async session({ session, token }) {
-          if (session?.user) {
-            session.user.id = token.sub || token.id || '';
-          }
-          return session;
-        },
-        async jwt({ token, user }) {
-          if (user?.id) {
+        async jwt({ token, user, account, profile }) {
+          console.log('[JWT] callback triggered - user:', user?.id, 'token.sub:', token?.sub);
+          // On sign in, add user id to token
+          if (user) {
             token.id = user.id;
+            console.log('[JWT] Added user.id to token:', token.id);
           }
           return token;
-        }
+        },
+        async redirect({ url, baseUrl }) {
+          console.log('[Redirect] url:', url, 'baseUrl:', baseUrl);
+          return url.startsWith(baseUrl) ? url : baseUrl + '/dashboard';
+        },
+        async session({ session, token }) {
+          console.log('[Session] callback - token.id:', token?.id, 'token.sub:', token?.sub);
+          // Add user id from token to session
+          if (session?.user && token?.id) {
+            session.user.id = token.id as string;
+          }
+          console.log('[Session] returning user:', session?.user?.email);
+          return session;
+        },
       },
       session: {
         strategy: 'jwt',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
       },
       pages: {
         signIn: '/auth/signin',
@@ -146,6 +164,10 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       },
       secret: nextAuthSecret,
       debug: process.env.NODE_ENV === 'development',
+      // Trust proxy headers when behind Firebase Hosting/Cloud Run
+      trustHost: true,
+      // Use plain cookie names without __Secure-/__Host- prefixes
+      useSecureCookies: false,
     };
   } catch (error) {
     console.error('Error in getAuthOptions:', error);

@@ -1,5 +1,17 @@
 import type { Firestore } from 'firebase-admin/firestore';
 
+// Helper to convert Firestore Timestamps to JS Dates
+function convertTimestamps(data: any): any {
+  if (!data) return data;
+  const result = { ...data };
+  for (const key in result) {
+    if (result[key]?.toDate && typeof result[key].toDate === 'function') {
+      result[key] = result[key].toDate();
+    }
+  }
+  return result;
+}
+
 // A minimal NextAuth adapter implementation that uses the Firebase Admin SDK.
 // This implements the methods NextAuth needs during OAuth callback flows.
 export function AdminFirestoreAdapter(db: Firestore) {
@@ -78,20 +90,32 @@ export function AdminFirestoreAdapter(db: Firestore) {
     },
 
     async createSession(session: any) {
+      console.log('[Adapter] createSession input:', { sessionToken: session?.sessionToken, userId: session?.userId, expires: session?.expires });
       const ref = await sessionsRef.add(session);
       const snap = await ref.get();
-      return { id: ref.id, ...snap.data() } as any;
+      const result = convertTimestamps({ id: ref.id, ...snap.data() }) as any;
+      console.log('[Adapter] createSession output:', { sessionId: ref.id, userId: result?.userId });
+      return result;
     },
 
     async getSessionAndUser(sessionToken: string) {
+      console.log('[Adapter] getSessionAndUser looking for:', sessionToken?.substring(0, 10) + '...');
       const q = sessionsRef.where('sessionToken', '==', sessionToken).limit(1);
       const snaps = await q.get();
+      console.log('[Adapter] getSessionAndUser found', snaps.size, 'documents');
       const sessionDoc = snaps.docs[0];
-      if (!sessionDoc) return null;
-      const session = { id: sessionDoc.id, ...sessionDoc.data() } as any;
+      if (!sessionDoc) {
+        console.log('[Adapter] getSessionAndUser: session not found');
+        return null;
+      }
+      const session = convertTimestamps({ id: sessionDoc.id, ...sessionDoc.data() }) as any;
       const userSnap = await usersRef.doc((session as any).userId).get();
-      if (!userSnap.exists) return null;
+      if (!userSnap.exists) {
+        console.log('[Adapter] getSessionAndUser: user not found');
+        return null;
+      }
       const user = { id: userSnap.id, ...userSnap.data() } as any;
+      console.log('[Adapter] getSessionAndUser returning:', { userEmail: user?.email, sessionExpires: session?.expires });
       return { session, user };
     },
 
@@ -102,7 +126,7 @@ export function AdminFirestoreAdapter(db: Firestore) {
       if (!doc) return null;
       await sessionsRef.doc(doc.id).set(partialSession, { merge: true });
       const snap = await sessionsRef.doc(doc.id).get();
-      return { id: snap.id, ...snap.data() } as any;
+      return convertTimestamps({ id: snap.id, ...snap.data() }) as any;
     },
 
     async deleteSession(sessionToken: string) {

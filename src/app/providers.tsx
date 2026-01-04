@@ -1,6 +1,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '@/context/AuthContext';
 import { App } from '@capacitor/app';
 import { ReactNode, useEffect } from 'react';
 
@@ -21,5 +22,11 @@ export function Providers({ children }: ProvidersProps) {
     };
   }, []);
 
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider basePath="/api/auth" refetchInterval={5 * 60}>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </SessionProvider>
+  );
 }

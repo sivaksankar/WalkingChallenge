@@ -24,6 +24,10 @@ export default function DashboardPage() {
     setIsClient(true);
   }, []);
 
+  useEffect(() => {
+    console.log('[Dashboard] status:', status, 'session:', session?.user?.email || 'null');
+  }, [status, session]);
+
   // Handle loading and unauthenticated states
   if (status === 'loading' || !isClient) {
     return (
@@ -39,11 +43,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="mt-2 text-sm opacity-70">
             Track your steps and see how you compare with others
           </p>
         </div>

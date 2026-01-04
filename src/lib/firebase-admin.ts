@@ -19,15 +19,43 @@ export const initFirebaseAdmin = () => {
     // Get environment variables
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    // Prefer raw private key, but also support a base64-encoded key to avoid CLI parsing issues
-    let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    
+    // Handle private key from multiple sources
+    let privateKey: string | undefined;
+    
+    // 1. Try raw private key with escaped newlines
+    if (process.env.FIREBASE_ADMIN_PRIVATE_KEY) {
+      privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+      // Handle both literal \n and actual newlines
+      if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      } else if (privateKey.includes('\\\\n')) {
+        privateKey = privateKey.replace(/\\\\n/g, '\n');
+      }
+    }
+    
+    // 2. Try base64-encoded key
     if (!privateKey && process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64) {
-      privateKey = Buffer.from(process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64, 'base64').toString('utf8');
+      try {
+        privateKey = Buffer.from(process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64, 'base64').toString('utf8');
+      } catch (e) {
+        console.error('Failed to decode base64 private key:', e);
+      }
+    }
+    
+    // 3. Also try ADMIN_PRIVATE_KEY for backward compatibility
+    if (!privateKey && process.env.ADMIN_PRIVATE_KEY) {
+      privateKey = process.env.ADMIN_PRIVATE_KEY;
+      if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      } else if (privateKey.includes('\\\\n')) {
+        privateKey = privateKey.replace(/\\\\n/g, '\n');
+      }
     }
 
     // Validate required environment variables
     if (!projectId || !clientEmail || !privateKey) {
-      throw new Error('Missing required Firebase Admin environment variables');
+      throw new Error(`Missing required Firebase Admin environment variables. Got projectId=${projectId}, clientEmail=${clientEmail}, privateKey=${privateKey ? 'set' : 'not set'}`);
     }
 
     // Initialize Firebase Admin if not already done
