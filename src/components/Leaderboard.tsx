@@ -17,7 +17,7 @@ export function Leaderboard({
 
   if (isLoading) {
     return (
-      <div className={`bg-white p-6 rounded-lg shadow ${className}`}>
+      <div className={`bg-white p-6 rounded-lg shadow border border-gray-200 ${className}`}>
         {showTitle && <h2 className="text-xl font-semibold mb-4">Leaderboard</h2>}
         <div className="space-y-3">
           {[...Array(limit)].map((_, i) => (
@@ -44,7 +44,7 @@ export function Leaderboard({
   }
 
   return (
-    <div className={`bg-white p-6 rounded-lg shadow ${className}`}>
+    <div className={`bg-white p-6 rounded-lg shadow border border-gray-200 ${className}`}>
       {showTitle && <h2 className="text-xl font-semibold mb-4">Leaderboard</h2>}
       
       <div className="space-y-3">

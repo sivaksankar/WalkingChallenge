@@ -1,0 +1,8 @@
+node_modules
+lib
+.next
+nextjs
+public
+.env
+.env.*
+firebase-debug.log*

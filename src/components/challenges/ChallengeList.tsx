@@ -76,11 +76,11 @@ export function ChallengeList() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Active Challenges</h2>
+      <h2 className="text-2xl font-bold">Active Challenges</h2>
       {challenges.length === 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">No Active Challenges</h3>
+            <h3 className="text-lg leading-6 font-medium">No Active Challenges</h3>
             <div className="mt-2 max-w-xl text-sm text-gray-500">
               <p>There are no active challenges at the moment. Please check back later or create a new challenge.</p>
             </div>
@@ -89,20 +89,20 @@ export function ChallengeList() {
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {challenges.map((challenge) => (
-            <div key={challenge.id} className="bg-white overflow-hidden shadow rounded-lg">
+            <div key={challenge.id} className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900">{challenge.name}</h3>
+                <h3 className="text-lg font-medium">{challenge.name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{challenge.description}</p>
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">Goal</p>
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold">
                       {challenge.minSteps.toLocaleString()} steps/day
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Participants</p>
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold">
                       {(challenge.participants || []).length}
                     </p>
                   </div>

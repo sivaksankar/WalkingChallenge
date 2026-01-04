@@ -4,10 +4,15 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 export function Navbar() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  
+  useEffect(() => {
+    console.log('[Navbar] user:', user?.email || 'null', 'loading:', loading);
+  }, [user, loading]);
 
   const handleSignIn = () => {
     router.push('/login');
@@ -19,7 +24,7 @@ export function Navbar() {
 
   if (loading) {
     return (
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -32,7 +37,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -44,14 +49,12 @@ export function Navbar() {
             {user ? (
               <Button 
                 onClick={handleDashboard}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 Go to Dashboard
               </Button>
             ) : (
               <Button 
                 onClick={handleSignIn}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 Sign In
               </Button>

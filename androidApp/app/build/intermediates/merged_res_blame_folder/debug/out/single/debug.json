@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/xml_asset_statements.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/xml/asset_statements.xml"
+    },
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.walkingchallenge.app-merged_res-70:/drawable_ic_logout.xml.flat",
+        "source": "com.walkingchallenge.app-main-72:/drawable/ic_logout.xml"
+    }
+]

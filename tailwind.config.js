@@ -10,10 +10,19 @@ module.exports = {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        primary: '#3b82f6',
+        'primary-foreground': '#ffffff',
+        secondary: '#6366f1',
+        'secondary-foreground': '#ffffff',
+        destructive: '#ef4444',
+        'destructive-foreground': '#ffffff',
+        accent: '#f3f4f6',
+        'accent-foreground': '#111827',
+        input: '#e5e7eb',
+        ring: '#3b82f6',
       },
     },
   },
   plugins: [],
-  darkMode: 'class',
 }
 

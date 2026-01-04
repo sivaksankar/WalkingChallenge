@@ -3,6 +3,9 @@ import { getAdmin } from '@/lib/firebase-admin';
 import { getAuthOptions } from '@/auth.config';
 import { getServerSession as _getServerSession } from 'next-auth/next';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

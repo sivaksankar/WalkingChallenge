@@ -1,0 +1,70 @@
+name: WalkingChallenge
+options:
+  bundleIdPrefix: com.walkingchallenge
+  deploymentTarget:
+    iOS: 16.0
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 1.0.0
+    ENABLE_PREVIEWS: YES
+
+attributes:
+  ORGANIZATIONNAME: Walking Challenge
+
+targets:
+  WalkingChallenge:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+        excludes:
+          - "**/*.md"
+    resources:
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.walkingchallenge.app
+        INFOPLIST_FILE: Config/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: Config/WalkingChallenge.entitlements
+    entitlements:
+      path: Config/WalkingChallenge.entitlements
+      properties:
+        com.apple.developer.associated-domains:
+          - applinks:app.walkingchallenge.com
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleName: Walking Challenge
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Light
+        CFBundleURLTypes:
+          - CFBundleURLName: walkingchallenge
+            CFBundleURLSchemes: ["walkingchallenge"]
+        LSApplicationQueriesSchemes: ["shealth"]
+        CFBundleDisplayName: Walking Challenge
+        NSCameraUsageDescription: "Camera access is required to personalize your profile."
+        NSHealthShareUsageDescription: "We use your step count to power the Walking Challenge leaderboards."
+        NSHealthUpdateUsageDescription: "We update your step goals and achievements in Walking Challenge."
+        NSCalendarsUsageDescription: "Calendar access lets us add challenge reminders."
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+        CFBundleShortVersionString: 1.0.0
+        CFBundleVersion: 1
+schemes:
+  WalkingChallenge:
+    build:
+      targets:
+        WalkingChallenge: all
+    run:
+      config: Debug
+    archive:
+      config: Release
