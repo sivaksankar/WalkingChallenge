@@ -49,17 +49,27 @@ final class AuthService: NSObject {
                         return
                     }
                     if let error = error {
+                        print("❌ ASWebAuthenticationSession error: \(error.localizedDescription)")
                         continuation.resume(throwing: error)
                         return
                     }
                     guard let callbackURL else {
+                        print("❌ No callback URL received")
                         continuation.resume(throwing: AuthError.authorizationFailed)
                         return
                     }
+                    print("✅ Received callback URL: \(callbackURL.absoluteString)")
+                    print("   Scheme: \(callbackURL.scheme ?? "none")")
+                    print("   Host: \(callbackURL.host ?? "none")")
+                    print("   Path: \(callbackURL.path)")
+                    print("   Query: \(callbackURL.query ?? "none")")
+                    
                     guard let code = Self.extractCode(from: callbackURL) else {
+                        print("❌ Failed to extract code from callback URL")
                         continuation.resume(throwing: AuthError.missingCode)
                         return
                     }
+                    print("✅ Extracted authorization code: \(code.prefix(10))...")
                     continuation.resume(returning: AuthResponse(code: code))
                 }
                 session.presentationContextProvider = provider

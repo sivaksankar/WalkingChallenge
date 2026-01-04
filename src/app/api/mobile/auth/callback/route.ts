@@ -7,13 +7,23 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
     const error = searchParams.get('error')
+    
+    // Log for debugging
+    console.log('Mobile OAuth callback received:', {
+      code: code ? `${code.substring(0, 10)}...` : null,
+      error,
+      allParams: Object.fromEntries(searchParams.entries())
+    })
 
     let redirectUrl: string
     if (error) {
+      console.log('OAuth error from Google:', error)
       redirectUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent(error)}`
     } else if (!code) {
+      console.log('No code received in callback')
       redirectUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent('missing_code')}`
     } else {
+      console.log('Redirecting to app with code')
       redirectUrl = `walkingchallenge://auth/callback?code=${encodeURIComponent(code)}`
     }
 
@@ -43,6 +53,9 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Mobile Google OAuth callback error:', error)
+    console.error('Request URL:', request.url)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    
     const errorUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent('callback_error')}`
     
     const html = `
