@@ -22,37 +22,64 @@ export async function POST(req: Request) {
     // Resolve userId from session (prefer id, fallback to lookup by email)
     let userId: string | undefined = (session.user as any)?.id;
     if (!userId) {
+      console.log('[Join Challenge] No user.id in session, looking up by email:', session.user.email);
       const usersQ = adminDb.collection('users').where('email', '==', session.user.email).limit(1);
       const snaps = await usersQ.get();
-      if (snaps.empty) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+      if (snaps.empty) {
+        console.log('[Join Challenge] User not found in Firestore, email:', session.user.email);
+        return NextResponse.json({ success: false, error: 'User not found. Please sign out and sign in again.' }, { status: 404 });
+      }
       userId = snaps.docs[0].id;
+      console.log('[Join Challenge] Found user by email, userId:', userId);
     }
+
+    console.log('[Join Challenge] userId:', userId, 'challengeId:', challengeId);
 
     const challengeRef = adminDb.collection('challenges').doc(challengeId);
     const userRef = adminDb.collection('users').doc(userId);
 
     // Add user to challenge participants and add challenge to user's challenges
     await adminDb.runTransaction(async (tx: any) => {
+      // IMPORTANT: All reads must happen before any writes in Firestore transactions
+      
+      // 1. Read challenge
       const chSnap = await tx.get(challengeRef);
       if (!chSnap.exists) throw new Error('Challenge not found');
+      
+      // 2. Read user
+      const userSnap = await tx.get(userRef);
+      
+      // Now perform all writes
       const participants = chSnap.data().participants || [];
       if (!participants.includes(userId)) {
+        console.log('[Join Challenge] Adding user to participants');
         tx.update(challengeRef, { participants: [...participants, userId] });
+      } else {
+        console.log('[Join Challenge] User already in participants');
       }
 
-      const userSnap = await tx.get(userRef);
       const userChallenges = userSnap.exists ? (userSnap.data().challenges || []) : [];
       if (!userChallenges.includes(challengeId)) {
         if (userSnap.exists) {
+          console.log('[Join Challenge] Updating user challenges');
           tx.update(userRef, { challenges: [...userChallenges, challengeId] });
         } else {
           // If user doc doesn't exist, create a minimal doc with challenges
-          tx.set(userRef, { challenges: [challengeId], createdAt: new Date() });
+          console.log('[Join Challenge] Creating new user document');
+          tx.set(userRef, { 
+            challenges: [challengeId], 
+            email: session.user.email,
+            name: session.user.name || '',
+            createdAt: new Date() 
+          });
         }
+      } else {
+        console.log('[Join Challenge] User already has this challenge');
       }
     });
 
-    return NextResponse.json({ success: true });
+    console.log('[Join Challenge] Transaction complete, returning success');
+    return NextResponse.json({ success: true, userId });
   } catch (error: any) {
     console.error('Error in /api/challenges/join POST:', error);
     return NextResponse.json({ success: false, error: error.message || 'Unknown error' }, { status: 500 });

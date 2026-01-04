@@ -11,13 +11,28 @@ export function ChallengeList() {
   const { data: session } = useSession();
   const router = useRouter();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [userChallenges, setUserChallenges] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadChallenges = async () => {
+    const loadData = async () => {
       try {
+        // Load all active challenges
         const activeChallenges = await getActiveChallenges();
         setChallenges(activeChallenges);
+
+        // Load user's joined challenges if authenticated
+        if (session?.user) {
+          try {
+            const res = await fetch('/api/user/challenges');
+            const json = await res.json();
+            if (json.success) {
+              setUserChallenges(json.challengeIds || []);
+            }
+          } catch (error) {
+            console.error('Error loading user challenges:', error);
+          }
+        }
       } catch (error) {
         console.error('Error loading challenges:', error);
       } finally {
@@ -25,28 +40,35 @@ export function ChallengeList() {
       }
     };
 
-    loadChallenges();
-  }, []);
+    loadData();
+  }, [session]);
 
   const handleJoinChallenge = async (challengeId: string) => {
-    if (!session?.user?.id) {
+    if (!session?.user) {
       router.push('/login');
       return;
     }
     
     try {
-      await joinChallenge(challengeId);
-      // Update local state to reflect the user joined
-      setChallenges(challenges.map(challenge => 
-        challenge.id === challengeId 
-          ? { 
-              ...challenge, 
-              participants: [...(challenge.participants || []), session.user!.id!] 
-            } 
-          : challenge
-      ));
-    } catch (error) {
+      const res = await joinChallenge(challengeId);
+      console.log('[ChallengeList] Join response:', res);
+      
+      // Reload challenges to get fresh data
+      const activeChallenges = await getActiveChallenges();
+      setChallenges(activeChallenges);
+      
+      // Reload user's challenges
+      const userRes = await fetch('/api/user/challenges');
+      const userJson = await userRes.json();
+      if (userJson.success) {
+        setUserChallenges(userJson.challengeIds || []);
+      }
+      
+      // Navigate to challenge detail page
+      router.push(`/dashboard/challenges/${challengeId}`);
+    } catch (error: any) {
       console.error('Error joining challenge:', error);
+      alert(error.message || 'Failed to join challenge');
     }
   };
 
@@ -70,14 +92,21 @@ export function ChallengeList() {
                 <p>Duration: {new Date(challenge.startDate).toLocaleDateString()} - {new Date(challenge.endDate).toLocaleDateString()}</p>
                 <p>Participants: {(challenge.participants || []).length}</p>
               </div>
-              {session?.user?.id && !challenge.participants?.includes(session.user.id) && (
+              {session?.user && !userChallenges.includes(challenge.id) ? (
                 <button
                   onClick={() => handleJoinChallenge(challenge.id)}
-                  className="mt-2 text-sm text-indigo-600 hover:text-indigo-800"
+                  className="mt-4 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors"
                 >
                   Join Challenge
                 </button>
-              )}
+              ) : userChallenges.includes(challenge.id) ? (
+                <button
+                  onClick={() => router.push(`/dashboard/challenges/${challenge.id}`)}
+                  className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  View Challenge
+                </button>
+              ) : null}
             </div>
           ))}
         </div>
