@@ -4,5 +4,38 @@
     "location": "nam5",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "package-lock.json"
+    ],
+    "predeploy": [
+      "npm run firebase:stage",
+      "npm --prefix functions install",
+      "npm --prefix functions run build"
+    ]
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "nextjs-app",
+          "region": "us-central1"
+        }
+      }
+    ]
   }
 }

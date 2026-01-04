@@ -36,7 +36,7 @@ export function CreateChallengeForm() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
+    <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
       <h2 className="text-xl font-bold mb-4">Create New Challenge</h2>
       {/* Only show form to configured admin */}
       {session?.user?.email === 'sivaksankar@gmail.com' ? (

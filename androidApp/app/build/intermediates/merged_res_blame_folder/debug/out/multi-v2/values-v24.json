@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.walkingchallenge.app-mergeDebugResources-68:/values-v24/values-v24.xml",
+            "map": [
+                {
+                    "source": "/Users/devi/.gradle/caches/8.9/transforms/35eae96146b81dbad4b664d95aa2455f/transformed/appcompat-1.6.1/res/values-v24/values-v24.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,212",
+                        "endColumns": "156,134",
+                        "endOffsets": "207,342"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -129,7 +129,7 @@ export function HealthSync() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
       <h2 className="text-2xl font-bold mb-4">Sync Health Data</h2>
       <p className="text-gray-600 mb-6">
         Track your daily steps {isNative ? 'automatically from your health app or' : 'by'} entering manually.

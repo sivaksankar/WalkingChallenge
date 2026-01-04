@@ -21,10 +21,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('[LoginPage] status:', status, 'session:', session?.user?.email);
     if (status === 'authenticated') {
+      console.log('[LoginPage] Redirecting to dashboard');
       router.push('/dashboard');
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   if (status === 'loading') {
     return (

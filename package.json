@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "firebase:stage": "rm -rf functions/nextjs && mkdir -p functions/nextjs && cp -r .next/standalone/* functions/nextjs/ && cp -r .next/static functions/nextjs/.next/ && cp -r public functions/nextjs/",
     "build:mobile": "next build && npx cap sync",
     "ios": "npx cap open ios",
-    "android": "npx cap open android"
+    "android": "npx cap open android",
+    "deploy:cloudrun": "gcloud builds submit --tag gcr.io/walking-challenge-cd6dd/nextjs-app && gcloud run deploy nextjs-app --image gcr.io/walking-challenge-cd6dd/nextjs-app --platform managed --region us-central1 --allow-unauthenticated && firebase deploy --only hosting"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
@@ -51,6 +53,7 @@
     "autoprefixer": "^10.4.0",
     "eslint": "8.0.0",
     "eslint-config-next": "13.4.19",
+    "firebase-tools": "^15.1.0",
     "postcss": "^8.4.0",
     "request": "^2.88.2",
     "tailwindcss": "^3.4.0",

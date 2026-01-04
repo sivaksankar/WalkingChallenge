@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="asset_statements">
+        <item>{
+          "relation": ["delegate_permission/common.handle_all_urls"],
+          "target": {
+            "namespace": "web",
+            "site": "https://app.walkingchallenge.com"
+          }
+        }</item>
+    </string-array>
+</resources>

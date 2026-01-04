@@ -6,7 +6,9 @@ import { signIn } from 'next-auth/react';
 export default function GoogleSignInButton() {
   const handleSignIn = async () => {
     try {
+      console.log('[GoogleSignInButton] Starting Google sign-in...');
       await signIn('google', { callbackUrl: '/dashboard' });
+      console.log('[GoogleSignInButton] signIn() completed');
     } catch (error) {
       console.error('Error signing in with Google:', error);
     }
