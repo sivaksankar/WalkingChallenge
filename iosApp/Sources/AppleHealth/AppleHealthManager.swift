@@ -3,10 +3,15 @@ import HealthKit
 
 @MainActor
 final class AppleHealthManager {
+    // Disable mock mode for production release
+    private let useMockData = false
+    
     enum HealthError: Error, LocalizedError {
         case notAvailable
         case authorizationDenied
         case integrationPending
+        case simulatorNotSupported
+        case systemDaemonUnavailable
 
         var errorDescription: String? {
             switch self {
@@ -16,6 +21,10 @@ final class AppleHealthManager {
                 return "We were not able to access your Apple Health step data."
             case .integrationPending:
                 return "Apple Health sync has not been implemented yet."
+            case .simulatorNotSupported:
+                return "Apple Health requires a physical iOS device. Please run the app on a real iPhone or iPad."
+            case .systemDaemonUnavailable:
+                return "HealthKit system service is currently unavailable. This is a known issue on iOS beta versions. Please try updating to the latest iOS version or report to Apple Feedback."
             }
         }
     }
@@ -27,29 +36,63 @@ final class AppleHealthManager {
     }
 
     func requestAuthorization() async throws {
+        // Mock mode for iOS beta testing
+        if useMockData {
+            print("⚠️ Using mock HealthKit mode (iOS beta workaround)")
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay to simulate permission sheet
+            print("✅ Mock HealthKit authorization granted")
+            return
+        }
+        
         guard isAvailable else { throw HealthError.notAvailable }
+        
+        #if targetEnvironment(simulator)
+        print("⚠️ HealthKit does not work on iOS Simulator")
+        throw HealthError.simulatorNotSupported
+        #endif
+        
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
             throw HealthError.notAvailable
         }
+        
+        print("🏥 Requesting HealthKit authorization...")
+        print("🏥 Step type: \(stepType)")
+        
         let readTypes: Set<HKObjectType> = [stepType]
-        let shareTypes: Set<HKSampleType> = []
-
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            healthStore.requestAuthorization(toShare: shareTypes, read: readTypes) { granted, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
+        
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let nsError = error as NSError
+                        print("❌ HealthKit error domain: \(nsError.domain)")
+                        print("❌ HealthKit error code: \(nsError.code)")
+                        print("❌ HealthKit error: \(error.localizedDescription)")
+                        print("❌ HealthKit error details: \(nsError.userInfo)")
+                        
+                        if nsError.domain == NSCocoaErrorDomain && nsError.code == 4097 {
+                            continuation.resume(throwing: HealthError.systemDaemonUnavailable)
+                        } else {
+                            continuation.resume(throwing: error)
+                        }
+                        return
+                    }
+                    print("✅ HealthKit authorization completed, success: \(success)")
+                    continuation.resume(returning: ())
                 }
-                guard granted else {
-                    continuation.resume(throwing: HealthError.authorizationDenied)
-                    return
-                }
-                continuation.resume(returning: ())
             }
         }
     }
 
     func syncLatestSteps(session: SessionSnapshot) async throws {
+        if useMockData {
+            let mockSteps = Int.random(in: 5000...15000)
+            print("⚠️ Mock mode: Would sync \(mockSteps) steps to backend")
+            print("📊 Session ID: \(session.user.id)")
+            print("📊 Access Token: \(session.accessToken.prefix(20))...")
+            return
+        }
+        
         throw HealthError.integrationPending
     }
 }

@@ -1,4 +1,34 @@
 import { NextRequest } from 'next/server'
+import { encodeMobileAuthPayload, exchangeCodeForMobileResponse } from '@/lib/mobile-auth'
+
+const MOBILE_APP_CALLBACK_URL = process.env.MOBILE_APP_CALLBACK_URL || 'walkingchallenge://auth/callback'
+
+function buildAppRedirect(params: Record<string, string>) {
+  const target = new URL(MOBILE_APP_CALLBACK_URL)
+  Object.entries(params).forEach(([key, value]) => target.searchParams.set(key, value))
+  return target.toString()
+}
+
+function htmlRedirect(targetUrl: string) {
+  const escapedAttr = targetUrl.replace(/"/g, '&quot;')
+  const scriptTarget = JSON.stringify(targetUrl)
+  return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta http-equiv="refresh" content="0;url=${escapedAttr}">
+          <title>Redirecting to app...</title>
+        </head>
+        <body>
+          <p>Redirecting to app...</p>
+          <script>
+            window.location.href = ${scriptTarget};
+          </script>
+        </body>
+      </html>
+    `
+}
 
 // Dedicated mobile OAuth callback that forwards to the app via custom scheme.
 // Uses HTML meta refresh since NextResponse.redirect doesn't work with custom schemes in all browsers.
@@ -18,32 +48,23 @@ export async function GET(request: NextRequest) {
     let redirectUrl: string
     if (error) {
       console.log('OAuth error from Google:', error)
-      redirectUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent(error)}`
+      redirectUrl = buildAppRedirect({ error })
     } else if (!code) {
       console.log('No code received in callback')
-      redirectUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent('missing_code')}`
+      redirectUrl = buildAppRedirect({ error: 'missing_code' })
     } else {
-      console.log('Redirecting to app with code')
-      redirectUrl = `walkingchallenge://auth/callback?code=${encodeURIComponent(code)}`
+      console.log('Attempting inline code exchange before redirect')
+      try {
+        const sessionPayload = await exchangeCodeForMobileResponse(code)
+        const payloadString = encodeMobileAuthPayload(sessionPayload)
+        redirectUrl = buildAppRedirect({ payload: payloadString, code })
+      } catch (exchangeError) {
+        console.error('Failed to exchange code inside callback:', exchangeError)
+        redirectUrl = buildAppRedirect({ error: 'exchange_failed', code })
+      }
     }
 
-    // Use HTML with meta refresh and JavaScript for better custom scheme support
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta http-equiv="refresh" content="0;url=${redirectUrl}">
-          <title>Redirecting to app...</title>
-        </head>
-        <body>
-          <p>Redirecting to app...</p>
-          <script>
-            window.location.href = "${redirectUrl}";
-          </script>
-        </body>
-      </html>
-    `
+    const html = htmlRedirect(redirectUrl)
 
     return new Response(html, {
       status: 200,
@@ -55,25 +76,9 @@ export async function GET(request: NextRequest) {
     console.error('Mobile Google OAuth callback error:', error)
     console.error('Request URL:', request.url)
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
-    
-    const errorUrl = `walkingchallenge://auth/callback?error=${encodeURIComponent('callback_error')}`
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta http-equiv="refresh" content="0;url=${errorUrl}">
-          <title>Error</title>
-        </head>
-        <body>
-          <p>Redirecting to app...</p>
-          <script>
-            window.location.href = "${errorUrl}";
-          </script>
-        </body>
-      </html>
-    `
+
+    const errorUrl = buildAppRedirect({ error: 'callback_error' })
+    const html = htmlRedirect(errorUrl)
 
     return new Response(html, {
       status: 200,

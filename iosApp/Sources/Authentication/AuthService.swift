@@ -4,7 +4,8 @@ import UIKit
 
 final class AuthService: NSObject {
     struct AuthResponse {
-        let code: String
+        let code: String?
+        let payload: SessionPayload?
     }
 
     enum AuthError: Error, LocalizedError {
@@ -31,9 +32,17 @@ final class AuthService: NSObject {
     private let urlSession: URLSession
     private var activeSession: ASWebAuthenticationSession?
 
-    init(configuration: AuthConfiguration, urlSession: URLSession = .shared) {
+    init(configuration: AuthConfiguration, urlSession: URLSession? = nil) {
         self.configuration = configuration
-        self.urlSession = urlSession
+        if let urlSession {
+            self.urlSession = urlSession
+        } else {
+            let sessionConfig = URLSessionConfiguration.default
+            sessionConfig.timeoutIntervalForRequest = 30
+            sessionConfig.timeoutIntervalForResource = 60
+            sessionConfig.requestCachePolicy = .reloadIgnoringLocalCacheData
+            self.urlSession = URLSession(configuration: sessionConfig)
+        }
     }
 
     func startSignIn() async throws -> AuthResponse {
@@ -64,13 +73,18 @@ final class AuthService: NSObject {
                     print("   Path: \(callbackURL.path)")
                     print("   Query: \(callbackURL.query ?? "none")")
                     
-                    guard let code = Self.extractCode(from: callbackURL) else {
+                    if let payload = Self.extractSessionPayload(from: callbackURL) {
+                        print("✅ Received inline session payload")
+                        continuation.resume(returning: AuthResponse(code: nil, payload: payload))
+                        return
+                    }
+                    guard let code = Self.queryValue(named: "code", from: callbackURL) else {
                         print("❌ Failed to extract code from callback URL")
                         continuation.resume(throwing: AuthError.missingCode)
                         return
                     }
                     print("✅ Extracted authorization code: \(code.prefix(10))...")
-                    continuation.resume(returning: AuthResponse(code: code))
+                    continuation.resume(returning: AuthResponse(code: code, payload: nil))
                 }
                 session.presentationContextProvider = provider
                 // Use in-app browser - false keeps cookies, but still opens Safari
@@ -97,37 +111,31 @@ final class AuthService: NSObject {
         print("🔄 Redirect URI: \(redirectUriString)")
         print("🔄 Code: \(code.prefix(10))...")
         
-        // Create a fresh URLSession configuration
-        let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 60
-        let freshSession = URLSession(configuration: config)
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("*/*", forHTTPHeaderField: "Accept")
+        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.timeoutInterval = 30
+        print("🔍 Request headers:", request.allHTTPHeaderFields ?? [:])
         
-        // Manually construct JSON to avoid any type issues
-        let jsonString = """
-        {
-            "code": "\(code)",
-            "redirectUri": "\(redirectUriString)"
+        let payload: [String: Any] = [
+            "code": code,
+            "redirectUri": redirectUriString
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        } catch {
+            throw AuthError.serverError("Failed to encode request: \(error.localizedDescription)")
         }
-        """
         
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw AuthError.serverError("Failed to encode request")
-        }
-        
-        request.httpBody = jsonData
         print("✅ Request body created successfully")
-
         print("🌐 Sending request...")
-        let (data, response) = try await freshSession.data(for: request)
+        
+        let (data, response) = try await urlSession.data(for: request)
         print("✅ Received response")
         
-        // Debug: print raw response
         if let responseString = String(data: data, encoding: .utf8) {
             print("📥 Exchange response: \(responseString)")
         }
@@ -135,6 +143,8 @@ final class AuthService: NSObject {
         guard let http = response as? HTTPURLResponse else {
             throw AuthError.serverError("Invalid server response")
         }
+        print("📊 Response status: \(http.statusCode)")
+        
         guard (200..<300).contains(http.statusCode) else {
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
             print("❌ Exchange failed with status \(http.statusCode): \(message)")
@@ -145,7 +155,9 @@ final class AuthService: NSObject {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         
         do {
-            return try decoder.decode(SessionPayload.self, from: data)
+            let payload = try decoder.decode(SessionPayload.self, from: data)
+            print("✅ Successfully decoded session payload")
+            return payload
         } catch {
             print("❌ JSON decode error: \(error)")
             if let decodingError = error as? DecodingError {
@@ -168,11 +180,36 @@ final class AuthService: NSObject {
         return components.url!
     }
 
-    private static func extractCode(from callbackURL: URL) -> String? {
+    private static func queryValue(named name: String, from callbackURL: URL) -> String? {
         URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?
             .queryItems?
-            .first { $0.name == "code" }?
+            .first { $0.name == name }?
             .value
+    }
+
+    private static func extractSessionPayload(from callbackURL: URL) -> SessionPayload? {
+        guard let payloadString = queryValue(named: "payload", from: callbackURL) else {
+            return nil
+        }
+        var normalized = payloadString
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let padding = 4 - (normalized.count % 4)
+        if padding < 4 {
+            normalized.append(String(repeating: "=", count: padding))
+        }
+        guard let data = Data(base64Encoded: normalized) else {
+            print("❌ Failed to decode payload base64 string")
+            return nil
+        }
+        do {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            return try decoder.decode(SessionPayload.self, from: data)
+        } catch {
+            print("❌ Failed to decode session payload JSON: \(error)")
+            return nil
+        }
     }
 }
 
