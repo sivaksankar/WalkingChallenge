@@ -47,7 +47,15 @@ final class AuthViewModel: ObservableObject {
         Task {
             do {
                 let response = try await authService.startSignIn()
-                let payload = try await authService.exchangeAuthorizationCode(response.code)
+                let payload: SessionPayload
+                if let inlinePayload = response.payload {
+                    print("✅ Using inline session payload from callback")
+                    payload = inlinePayload
+                } else if let code = response.code {
+                    payload = try await authService.exchangeAuthorizationCode(code)
+                } else {
+                    throw AuthService.AuthError.missingCode
+                }
                 let snapshot = SessionSnapshot(
                     accessToken: payload.tokens.accessToken,
                     refreshToken: payload.tokens.refreshToken,
@@ -56,21 +64,15 @@ final class AuthViewModel: ObservableObject {
                 )
                 sessionStore.store(snapshot)
                 phase = .signedIn(snapshot)
+                isBusy = false
                 
-                // Show health permissions sheet after successful sign-in
-                // The actual permission request happens when user taps Connect button
-                if healthManager.isAvailable {
-                    // Delay to ensure auth modal fully dismisses before showing health sheet
-                    try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                    requiresHealthPermission = true
-                } else {
-                    requiresHealthPermission = false
-                }
+                // Don't auto-show health permissions - let user initiate from dashboard
+                // This avoids presentation conflicts with OAuth flow
             } catch {
                 errorMessage = error.localizedDescription
                 phase = .signedOut
+                isBusy = false
             }
-            isBusy = false
         }
     }
 
@@ -86,14 +88,22 @@ final class AuthViewModel: ObservableObject {
     func requestHealthPermissions() async {
         guard !isBusy else { return }
         guard case let .signedIn(session) = phase else { return }
+        
+        // Dismiss the sheet first
+        await MainActor.run {
+            requiresHealthPermission = false
+        }
+        
+        // Wait for sheet to fully dismiss
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        
         isBusy = true
         do {
             guard healthManager.isAvailable else {
                 throw AppleHealthManager.HealthError.notAvailable
             }
             try await healthManager.requestAuthorization()
-            // Health permissions granted, mark as complete
-            requiresHealthPermission = false
+            print("✅ Health permissions setup complete")
             
             // TODO: Implement step sync with backend
             // try await healthManager.syncLatestSteps(session: session)

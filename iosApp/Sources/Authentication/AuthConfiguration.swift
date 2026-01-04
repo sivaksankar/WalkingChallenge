@@ -22,7 +22,7 @@ struct AuthConfiguration {
     }
 
     static let defaultConfig = AuthConfiguration(
-        webBaseURL: URL(string: "https://nextjs-app-maiqzzrcja-uc.a.run.app")!,
+        webBaseURL: URL(string: "https://nextjs-app-409798850238.us-central1.run.app")!,
         redirectScheme: "walkingchallenge",
         redirectHost: "auth",
         redirectPath: "/callback",
