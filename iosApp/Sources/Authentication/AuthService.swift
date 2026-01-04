@@ -63,7 +63,8 @@ final class AuthService: NSObject {
                     continuation.resume(returning: AuthResponse(code: code))
                 }
                 session.presentationContextProvider = provider
-                // Use in-app browser session for better health integration
+                // Use in-app browser - false keeps cookies, but still opens Safari
+                // iOS will always use Safari for OAuth, but this ensures it comes back to app
                 session.prefersEphemeralWebBrowserSession = false
                 self.activeSession = session
                 if !session.start() {

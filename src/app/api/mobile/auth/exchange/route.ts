@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code: body.code,
         grant_type: 'authorization_code',
-        redirect_uri: 'https://nextjs-app-maiqzzrcja-uc.a.run.app/api/auth/callback/google',
+        // Must match the dedicated mobile callback to avoid NextAuth catch-all
+        redirect_uri: 'https://nextjs-app-maiqzzrcja-uc.a.run.app/api/mobile/auth/callback',
       }),
     })
 

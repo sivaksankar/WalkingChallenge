@@ -38,7 +38,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 4. Click "Create Credentials" > "OAuth client ID"
 5. Select "Web application" as the application type
 6. Add authorized JavaScript origins: `http://localhost:3000`
-7. Add authorized redirect URIs: `http://localhost:3000/api/auth/callback/google`
+7. Add authorized redirect URIs: `http://localhost:3000/api/mobile/auth/callback` and the deployed URL `https://nextjs-app-maiqzzrcja-uc.a.run.app/api/mobile/auth/callback`
 8. Copy the Client ID and Client Secret to your `.env.local` file
 
 ## Running the Application
