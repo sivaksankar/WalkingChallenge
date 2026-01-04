@@ -103,11 +103,13 @@ final class AuthViewModel: ObservableObject {
                 throw AppleHealthManager.HealthError.notAvailable
             }
             try await healthManager.requestAuthorization()
-            print("✅ Health permissions setup complete")
+            print("✅ Health permissions granted")
             
-            // TODO: Implement step sync with backend
-            // try await healthManager.syncLatestSteps(session: session)
+            // Sync today's steps to backend
+            try await healthManager.syncLatestSteps(session: session)
+            print("✅ Initial step sync complete")
         } catch {
+            print("❌ Health setup error: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
         }
         isBusy = false

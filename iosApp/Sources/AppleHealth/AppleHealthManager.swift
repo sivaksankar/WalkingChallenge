@@ -93,6 +93,84 @@ final class AppleHealthManager {
             return
         }
         
-        throw HealthError.integrationPending
+        guard isAvailable else { throw HealthError.notAvailable }
+        
+        guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
+            throw HealthError.notAvailable
+        }
+        
+        // Get today's steps
+        let now = Date()
+        let startOfDay = Calendar.current.startOfDay(for: now)
+        
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: now,
+            options: .strictStartDate
+        )
+        
+        let query = HKStatisticsQuery(
+            quantityType: stepType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, error in
+            Task { @MainActor in
+                if let error = error {
+                    print("❌ Failed to fetch steps: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let result = result,
+                      let sum = result.sumQuantity() else {
+                    print("⚠️ No step data available")
+                    return
+                }
+                
+                let steps = Int(sum.doubleValue(for: HKUnit.count()))
+                print("📊 Fetched \(steps) steps for today")
+                
+                // Send to backend
+                await self.sendStepsToBackend(steps: steps, date: startOfDay, session: session)
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    private func sendStepsToBackend(steps: Int, date: Date, session: SessionSnapshot) async {
+        guard let url = URL(string: "\(AuthConfiguration.defaultConfig.webBaseURL)/api/steps/sync") else {
+            print("❌ Invalid backend URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let dateFormatter = ISO8601DateFormatter()
+        let payload: [String: Any] = [
+            "steps": steps,
+            "date": dateFormatter.string(from: date),
+            "source": "apple_health"
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    print("✅ Successfully synced \(steps) steps to backend")
+                } else {
+                    print("⚠️ Backend returned status code: \(httpResponse.statusCode)")
+                    if let responseBody = String(data: data, encoding: .utf8) {
+                        print("Response: \(responseBody)")
+                    }
+                }
+            }
+        } catch {
+            print("❌ Failed to sync steps to backend: \(error.localizedDescription)")
+        }
     }
 }
