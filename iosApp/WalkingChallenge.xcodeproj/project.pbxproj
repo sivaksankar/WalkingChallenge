@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,7 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		29FC585459A8981069CC96FA /* WalkingChallenge.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WalkingChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		29FC585459A8981069CC96FA /* WalkingChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalkingChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FC0A83DB1D44C1C6AA60385 /* AppleHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthManager.swift; sourceTree = "<group>"; };
 		5945995A40B55EBD94DB49BC /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		5E0DC9184C79EAFED366C473 /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
@@ -42,6 +42,10 @@
 		DE026F46CAA494F563A346DD /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		E5B93ADBF761804E68FDF0A7 /* HealthPermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPermissionsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D370289C2F0AE7DD0000AD0F /* Resources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Resources; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
 		1B06F10304D6E75AD0609C49 /* Screens */ = {
@@ -84,6 +88,7 @@
 		9D1CF097C55FAC5545559274 = {
 			isa = PBXGroup;
 			children = (
+				D370289C2F0AE7DD0000AD0F /* Resources */,
 				59A949B4799815CB9BB92485 /* Config */,
 				BCB9B2209F48BB3BD3710F15 /* Sources */,
 				4E99147A01800D2056F2A230 /* Products */,
@@ -163,10 +168,14 @@
 			buildConfigurationList = C6AF1ADF6165C2A1D1857512 /* Build configuration list for PBXNativeTarget "WalkingChallenge" */;
 			buildPhases = (
 				F1772D6311148F464AD76974 /* Sources */,
+				D370289D2F0AE8080000AD0F /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D370289C2F0AE7DD0000AD0F /* Resources */,
 			);
 			name = WalkingChallenge;
 			packageProductDependencies = (
@@ -201,7 +210,6 @@
 			);
 			mainGroup = 9D1CF097C55FAC5545559274;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -209,6 +217,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D370289D2F0AE8080000AD0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F1772D6311148F464AD76974 /* Sources */ = {
