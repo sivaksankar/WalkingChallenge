@@ -13,3 +13,9 @@ build
 .firebase
 functions/node_modules
 functions/.env
+
+# Exclude mobile app directories from Cloud Run builds
+iosApp
+androidApp
+android
+ios

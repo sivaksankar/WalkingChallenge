@@ -1,0 +1,26 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/walking-challenge-cd6dd/nextjs-app:$BUILD_ID', '-t', 'gcr.io/walking-challenge-cd6dd/nextjs-app:latest', '.']
+  
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/walking-challenge-cd6dd/nextjs-app:latest']
+  
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'nextjs-app'
+      - '--image'
+      - 'gcr.io/walking-challenge-cd6dd/nextjs-app:latest'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/walking-challenge-cd6dd/nextjs-app:latest'

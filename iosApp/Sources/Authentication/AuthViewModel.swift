@@ -57,12 +57,12 @@ final class AuthViewModel: ObservableObject {
                 sessionStore.store(snapshot)
                 phase = .signedIn(snapshot)
                 
-                // Automatically request health permissions after successful sign-in
+                // Show health permissions sheet after successful sign-in
+                // The actual permission request happens when user taps Connect button
                 if healthManager.isAvailable {
+                    // Delay to ensure auth modal fully dismisses before showing health sheet
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
                     requiresHealthPermission = true
-                    // Small delay to allow UI to update
-                    try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-                    await requestHealthPermissions()
                 } else {
                     requiresHealthPermission = false
                 }

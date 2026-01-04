@@ -16,7 +16,8 @@ struct AuthConfiguration {
     }
     
     var webRedirectURL: URL {
-        return webBaseURL.appending(path: "/api/auth/callback/google")
+        // Dedicated mobile callback to avoid clashing with NextAuth's catch-all
+        return webBaseURL.appending(path: "/api/mobile/auth/callback")
     }
 
     static let defaultConfig = AuthConfiguration(
