@@ -99,10 +99,14 @@ final class AuthService: NSObject {
     }
 
     private func authorizationURL() -> URL {
-        var components = URLComponents(url: configuration.webBaseURL, resolvingAgainstBaseURL: false)!
-        components.path = "/api/auth/signin"
+        var components = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
         components.queryItems = [
-            URLQueryItem(name: "redirect_uri", value: configuration.redirectURL.absoluteString)
+            URLQueryItem(name: "client_id", value: configuration.googleClientId),
+            URLQueryItem(name: "redirect_uri", value: configuration.redirectURL.absoluteString),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: "openid email profile"),
+            URLQueryItem(name: "access_type", value: "offline"),
+            URLQueryItem(name: "prompt", value: "consent")
         ]
         return components.url!
     }
