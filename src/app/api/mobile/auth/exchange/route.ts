@@ -97,12 +97,22 @@ export async function POST(request: NextRequest) {
         expiresIn: tokens.expires_in
       },
       profile: {
-        id: userInfo.id,
+        id: String(userInfo.id), // Ensure it's a string
         name: userInfo.name,
         email: userInfo.email,
-        image: userInfo.picture
+        image: userInfo.picture || undefined // Explicit undefined if no picture
       }
     }
+
+    console.log('Returning mobile auth response:', {
+      hasAccessToken: !!response.tokens.accessToken,
+      hasRefreshToken: !!response.tokens.refreshToken,
+      expiresIn: response.tokens.expiresIn,
+      expiresInType: typeof response.tokens.expiresIn,
+      profileId: response.profile.id,
+      profileIdType: typeof response.profile.id,
+      hasImage: !!response.profile.image
+    })
 
     return NextResponse.json(response)
     

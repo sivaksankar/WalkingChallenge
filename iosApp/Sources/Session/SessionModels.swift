@@ -10,7 +10,17 @@ struct UserProfile: Codable {
     let id: String
     let name: String
     let email: String?
-    let image: URL?
+    let imageURL: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, email
+        case imageURL = "image"
+    }
+    
+    var image: URL? {
+        guard let imageURL else { return nil }
+        return URL(string: imageURL)
+    }
 }
 
 struct SessionPayload: Codable {
