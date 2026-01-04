@@ -81,7 +81,7 @@ final class AuthService: NSObject {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         let payload = [
             "code": code,
-            "redirectUri": configuration.redirectURL.absoluteString
+            "redirectUri": configuration.webRedirectURL.absoluteString
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
@@ -102,7 +102,7 @@ final class AuthService: NSObject {
         var components = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
         components.queryItems = [
             URLQueryItem(name: "client_id", value: configuration.googleClientId),
-            URLQueryItem(name: "redirect_uri", value: configuration.redirectURL.absoluteString),
+            URLQueryItem(name: "redirect_uri", value: configuration.webRedirectURL.absoluteString),
             URLQueryItem(name: "response_type", value: "code"),
             URLQueryItem(name: "scope", value: "openid email profile"),
             URLQueryItem(name: "access_type", value: "offline"),
