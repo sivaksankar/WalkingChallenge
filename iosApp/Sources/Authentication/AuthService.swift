@@ -86,27 +86,73 @@ final class AuthService: NSObject {
     }
 
     func exchangeAuthorizationCode(_ code: String) async throws -> SessionPayload {
-        let exchangeURL = configuration.webBaseURL.appending(path: "/api/mobile/auth/exchange")
-        var request = URLRequest(url: exchangeURL)
+        let exchangeURL = configuration.webBaseURL.absoluteString + "/api/mobile/auth/exchange"
+        print("🔄 Exchange URL: \(exchangeURL)")
+        
+        guard let url = URL(string: exchangeURL) else {
+            throw AuthError.serverError("Invalid exchange URL")
+        }
+        
+        let redirectUriString = configuration.webRedirectURL.absoluteString
+        print("🔄 Redirect URI: \(redirectUriString)")
+        print("🔄 Code: \(code.prefix(10))...")
+        
+        // Create a fresh URLSession configuration
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        let freshSession = URLSession(configuration: config)
+        
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let payload = [
-            "code": code,
-            "redirectUri": configuration.webRedirectURL.absoluteString
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("*/*", forHTTPHeaderField: "Accept")
+        
+        // Manually construct JSON to avoid any type issues
+        let jsonString = """
+        {
+            "code": "\(code)",
+            "redirectUri": "\(redirectUriString)"
+        }
+        """
+        
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw AuthError.serverError("Failed to encode request")
+        }
+        
+        request.httpBody = jsonData
+        print("✅ Request body created successfully")
 
-        let (data, response) = try await urlSession.data(for: request)
+        print("🌐 Sending request...")
+        let (data, response) = try await freshSession.data(for: request)
+        print("✅ Received response")
+        
+        // Debug: print raw response
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📥 Exchange response: \(responseString)")
+        }
+        
         guard let http = response as? HTTPURLResponse else {
             throw AuthError.serverError("Invalid server response")
         }
         guard (200..<300).contains(http.statusCode) else {
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ Exchange failed with status \(http.statusCode): \(message)")
             throw AuthError.serverError(message)
         }
+        
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(SessionPayload.self, from: data)
+        
+        do {
+            return try decoder.decode(SessionPayload.self, from: data)
+        } catch {
+            print("❌ JSON decode error: \(error)")
+            if let decodingError = error as? DecodingError {
+                print("   Decoding error details: \(decodingError)")
+            }
+            throw AuthError.serverError("Failed to decode response: \(error.localizedDescription)")
+        }
     }
 
     private func authorizationURL() -> URL {

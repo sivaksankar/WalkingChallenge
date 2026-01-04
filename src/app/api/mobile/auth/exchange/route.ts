@@ -92,15 +92,15 @@ export async function POST(request: NextRequest) {
     // Return the mobile auth response
     const response: MobileAuthResponse = {
       tokens: {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token || '',
-        expiresIn: tokens.expires_in
+        accessToken: String(tokens.access_token),
+        refreshToken: String(tokens.refresh_token || ''),
+        expiresIn: Number(tokens.expires_in) // Explicitly ensure it's a number
       },
       profile: {
-        id: String(userInfo.id), // Ensure it's a string
-        name: userInfo.name,
-        email: userInfo.email,
-        image: userInfo.picture || undefined // Explicit undefined if no picture
+        id: String(userInfo.id),
+        name: String(userInfo.name),
+        email: String(userInfo.email),
+        image: userInfo.picture ? String(userInfo.picture) : undefined
       }
     }
 
@@ -114,7 +114,12 @@ export async function POST(request: NextRequest) {
       hasImage: !!response.profile.image
     })
 
-    return NextResponse.json(response)
+    // Ensure proper JSON serialization
+    return NextResponse.json(response, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    })
     
   } catch (error) {
     console.error('Mobile auth exchange error:', error)
