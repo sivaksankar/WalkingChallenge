@@ -24,6 +24,6 @@ struct AuthConfiguration {
         redirectScheme: "walkingchallenge",
         redirectHost: "auth",
         redirectPath: "/callback",
-        googleClientId: "460193411242-n6aqbl6o4cu53o7u1f76fp6pam4uj5f8.apps.googleusercontent.com"
+        googleClientId: "409798850238-oekq5bdeg2ms073apvuoidd260gmfkpd.apps.googleusercontent.com"
     )
 }
