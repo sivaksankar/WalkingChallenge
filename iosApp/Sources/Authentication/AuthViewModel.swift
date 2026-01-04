@@ -56,7 +56,16 @@ final class AuthViewModel: ObservableObject {
                 )
                 sessionStore.store(snapshot)
                 phase = .signedIn(snapshot)
-                requiresHealthPermission = true
+                
+                // Automatically request health permissions after successful sign-in
+                if healthManager.isAvailable {
+                    requiresHealthPermission = true
+                    // Small delay to allow UI to update
+                    try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                    await requestHealthPermissions()
+                } else {
+                    requiresHealthPermission = false
+                }
             } catch {
                 errorMessage = error.localizedDescription
                 phase = .signedOut
@@ -74,23 +83,24 @@ final class AuthViewModel: ObservableObject {
         requiresHealthPermission = false
     }
 
-    func requestHealthPermissions() {
+    func requestHealthPermissions() async {
         guard !isBusy else { return }
         guard case let .signedIn(session) = phase else { return }
         isBusy = true
-        Task {
-            do {
-                guard healthManager.isAvailable else {
-                    throw AppleHealthManager.HealthError.notAvailable
-                }
-                try await healthManager.requestAuthorization()
-                try await healthManager.syncLatestSteps(session: session)
-                requiresHealthPermission = false
-            } catch {
-                errorMessage = error.localizedDescription
+        do {
+            guard healthManager.isAvailable else {
+                throw AppleHealthManager.HealthError.notAvailable
             }
-            isBusy = false
+            try await healthManager.requestAuthorization()
+            // Health permissions granted, mark as complete
+            requiresHealthPermission = false
+            
+            // TODO: Implement step sync with backend
+            // try await healthManager.syncLatestSteps(session: session)
+        } catch {
+            errorMessage = error.localizedDescription
         }
+        isBusy = false
     }
 
     func clearError() {

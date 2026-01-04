@@ -39,34 +39,37 @@ final class AuthService: NSObject {
     func startSignIn() async throws -> AuthResponse {
         let authURL = authorizationURL()
         return try await withCheckedThrowingContinuation { continuation in
-            let provider = AuthenticationPresentationProvider()
-            let session = ASWebAuthenticationSession(url: authURL, callbackURLScheme: configuration.redirectScheme) { [weak self] callbackURL, error in
-                defer { self?.activeSession = nil }
-                if let nsError = error as? ASWebAuthenticationSessionError,
-                   nsError.code == .canceledLogin {
-                    continuation.resume(throwing: AuthError.cancelled)
-                    return
+            Task { @MainActor in
+                let provider = AuthenticationPresentationProvider()
+                let session = ASWebAuthenticationSession(url: authURL, callbackURLScheme: configuration.redirectScheme) { [weak self] callbackURL, error in
+                    defer { self?.activeSession = nil }
+                    if let nsError = error as? ASWebAuthenticationSessionError,
+                       nsError.code == .canceledLogin {
+                        continuation.resume(throwing: AuthError.cancelled)
+                        return
+                    }
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+                    guard let callbackURL else {
+                        continuation.resume(throwing: AuthError.authorizationFailed)
+                        return
+                    }
+                    guard let code = Self.extractCode(from: callbackURL) else {
+                        continuation.resume(throwing: AuthError.missingCode)
+                        return
+                    }
+                    continuation.resume(returning: AuthResponse(code: code))
                 }
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let callbackURL else {
+                session.presentationContextProvider = provider
+                // Use in-app browser session for better health integration
+                session.prefersEphemeralWebBrowserSession = false
+                self.activeSession = session
+                if !session.start() {
+                    self.activeSession = nil
                     continuation.resume(throwing: AuthError.authorizationFailed)
-                    return
                 }
-                guard let code = Self.extractCode(from: callbackURL) else {
-                    continuation.resume(throwing: AuthError.missingCode)
-                    return
-                }
-                continuation.resume(returning: AuthResponse(code: code))
-            }
-            session.presentationContextProvider = provider
-            session.prefersEphemeralWebBrowserSession = true
-            self.activeSession = session
-            if !session.start() {
-                self.activeSession = nil
-                continuation.resume(throwing: AuthError.authorizationFailed)
             }
         }
     }
