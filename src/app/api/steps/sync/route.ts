@@ -1,5 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decode } from 'next-auth/jwt';
+
+async function verifyGoogleToken(token: string) {
+  try {
+    // Verify with Google's tokeninfo endpoint
+    const response = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${token}`
+    );
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.sub; // Google user ID
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,20 +32,15 @@ export async function POST(request: NextRequest) {
 
     const token = authHeader.substring(7);
     
-    // Decode the JWT token
-    const decoded = await decode({
-      token,
-      secret: process.env.NEXTAUTH_SECRET || '',
-    });
+    // Verify the Google OAuth access token
+    const userId = await verifyGoogleToken(token);
 
-    if (!decoded?.sub) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
-
-    const userId = decoded.sub;
     const body = await request.json();
     const { steps, date, source } = body;
 
