@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../[...nextauth]/route'
 
 interface MobileAuthRequest {
   code: string
   redirectUri: string
+}
+
+interface GoogleTokenResponse {
+  access_token: string
+  refresh_token: string
+  id_token: string
+  expires_in: number
+  token_type: string
+}
+
+interface GoogleUserInfo {
+  id: string
+  email: string
+  name: string
+  picture?: string
 }
 
 interface MobileAuthResponse {
@@ -32,30 +45,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Exchange the authorization code for tokens using NextAuth
-    // For now, we'll simulate this process since we need to integrate with NextAuth properly
-    
-    // In a real implementation, you would:
-    // 1. Exchange the code with Google OAuth
-    // 2. Create a session
-    // 3. Return the session tokens
-    
-    // For now, return a mock response to test the mobile flow
-    const mockResponse: MobileAuthResponse = {
+    // Exchange authorization code for tokens with Google
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        code: body.code,
+        grant_type: 'authorization_code',
+        redirect_uri: body.redirectUri,
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text()
+      console.error('Google token exchange failed:', error)
+      return NextResponse.json(
+        { error: 'Failed to exchange authorization code' },
+        { status: 400 }
+      )
+    }
+
+    const tokens: GoogleTokenResponse = await tokenResponse.json()
+
+    // Get user info from Google
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`,
+      },
+    })
+
+    if (!userResponse.ok) {
+      console.error('Failed to get user info from Google')
+      return NextResponse.json(
+        { error: 'Failed to get user information' },
+        { status: 400 }
+      )
+    }
+
+    const userInfo: GoogleUserInfo = await userResponse.json()
+
+    // Return the mobile auth response
+    const response: MobileAuthResponse = {
       tokens: {
-        accessToken: `mobile_token_${Date.now()}`,
-        refreshToken: `mobile_refresh_${Date.now()}`,
-        expiresIn: 3600 // 1 hour
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || '',
+        expiresIn: tokens.expires_in
       },
       profile: {
-        id: 'mobile_user_' + Date.now(),
-        name: 'Mobile Test User',
-        email: 'mobile@test.com',
-        image: undefined
+        id: userInfo.id,
+        name: userInfo.name,
+        email: userInfo.email,
+        image: userInfo.picture
       }
     }
 
-    return NextResponse.json(mockResponse)
+    return NextResponse.json(response)
     
   } catch (error) {
     console.error('Mobile auth exchange error:', error)

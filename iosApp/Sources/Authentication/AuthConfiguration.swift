@@ -5,6 +5,7 @@ struct AuthConfiguration {
     let redirectScheme: String
     let redirectHost: String
     let redirectPath: String
+    let googleClientId: String
 
     var redirectURL: URL {
         var components = URLComponents()
@@ -18,6 +19,7 @@ struct AuthConfiguration {
         webBaseURL: URL(string: "https://nextjs-app-maiqzzrcja-uc.a.run.app")!,
         redirectScheme: "walkingchallenge",
         redirectHost: "auth",
-        redirectPath: "/callback"
+        redirectPath: "/callback",
+        googleClientId: "460193411242-n6aqbl6o4cu53o7u1f76fp6pam4uj5f8.apps.googleusercontent.com"
     )
 }
