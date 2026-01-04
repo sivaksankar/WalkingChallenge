@@ -18,7 +18,11 @@ struct RootView: View {
             HealthPermissionsView(
                 isLoading: authViewModel.isBusy,
                 isAppleHealthAvailable: authViewModel.isAppleHealthAvailable,
-                onConnect: { authViewModel.requestHealthPermissions() },
+                onConnect: { 
+                    Task {
+                        await authViewModel.requestHealthPermissions()
+                    }
+                },
                 onSkip: {
                     authViewModel.markHealthPermissionComplete()
                 }
