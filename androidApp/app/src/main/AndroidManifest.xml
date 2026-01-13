@@ -31,6 +31,15 @@
                 <data android:scheme="walkingchallenge" android:host="auth" android:path="/callback" />
             </intent-filter>
 
+            <!-- Fallback: accept any walkingchallenge://... URIs without host/path to improve
+                 compatibility across devices/browsers that may omit the host. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="walkingchallenge" />
+            </intent-filter>
+
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
