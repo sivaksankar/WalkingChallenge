@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+// This route needs request context (headers/url), force dynamic execution
+export const dynamic = 'force-dynamic'
 import { encodeMobileAuthPayload, exchangeCodeForMobileResponse } from '@/lib/mobile-auth'
 
 const MOBILE_APP_CALLBACK_URL = process.env.MOBILE_APP_CALLBACK_URL || 'walkingchallenge://auth/callback'
