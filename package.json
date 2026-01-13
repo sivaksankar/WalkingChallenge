@@ -12,6 +12,7 @@
     "ios": "npx cap open ios",
     "android": "npx cap open android",
     "deploy:cloudrun": "gcloud builds submit --tag gcr.io/walking-challenge-cd6dd/nextjs-app && gcloud run deploy nextjs-app --image gcr.io/walking-challenge-cd6dd/nextjs-app --platform managed --region us-central1 --allow-unauthenticated && firebase deploy --only hosting"
+    ,"migrate:merge-duplicates": "node scripts/merge-duplicate-users.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
