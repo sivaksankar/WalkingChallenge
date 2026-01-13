@@ -8,40 +8,106 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const challengeId = searchParams.get('challengeId');
 
     const { adminDb } = await getAdmin();
     if (!adminDb) return NextResponse.json({ success: false, error: 'Admin Firestore not initialized' }, { status: 500 });
 
-    // Aggregate today's steps from users' `steps` subcollections. Try collectionGroup first for efficiency.
     const today = new Date().toISOString().split('T')[0];
-
     let userStepsMap: Record<string, number> = {};
+    let participantIds: string[] = [];
 
-    try {
-      const stepsGroup = adminDb.collectionGroup('steps').where('date', '==', today);
-      const stepsSnap = await stepsGroup.get();
-      stepsSnap.forEach((doc: any) => {
-        const data = doc.data();
-        const userRef = doc.ref.parent.parent;
-        if (!userRef) return;
-        const uid = userRef.id;
-        userStepsMap[uid] = (userStepsMap[uid] || 0) + (data.steps || 0);
-      });
-    } catch (cgError) {
-      // collectionGroup may fail in certain environments or require indexes — fall back to per-user reads
-      console.warn('collectionGroup failed, falling back to per-user reads:', cgError);
-      const usersSnap = await adminDb.collection('users').get();
-      await Promise.all(usersSnap.docs.map(async (u: any) => {
-        try {
-          const stepsDoc = await adminDb.collection('users').doc(u.id).collection('steps').doc(today).get();
-          if (stepsDoc.exists) {
-            const data = stepsDoc.data() || {};
-            userStepsMap[u.id] = (data.steps || 0);
+    if (challengeId) {
+      // Fetch challenge and its participants
+      const challengeSnap = await adminDb.collection('challenges').doc(challengeId).get();
+      if (!challengeSnap.exists) {
+        return NextResponse.json({ success: false, error: 'Challenge not found' }, { status: 404 });
+      }
+      const challenge = challengeSnap.data();
+      // Participants may be stored as user IDs or emails; normalize to user IDs
+      const rawParticipants: string[] = Array.isArray(challenge?.participants) ? challenge.participants : [];
+      if (rawParticipants.length === 0) {
+        return NextResponse.json({ success: true, leaderboard: [] });
+      }
+
+      // Resolve emails to user document IDs
+      participantIds = [];
+      await Promise.all(rawParticipants.map(async (p) => {
+        if (typeof p !== 'string') return;
+        // crude email heuristic
+        if (p.includes('@')) {
+          try {
+            const q = await adminDb.collection('users').where('email', '==', p).limit(1).get();
+            if (!q.empty) {
+              participantIds.push(q.docs[0].id);
+            } else {
+              console.warn('No user found for participant email:', p);
+            }
+          } catch (e) {
+            console.error('Error resolving participant email to user id:', p, e);
           }
-        } catch (e) {
-          console.error('Error reading steps for user', u.id, e);
+        } else {
+          participantIds.push(p);
         }
       }));
+      if (participantIds.length === 0) {
+        return NextResponse.json({ success: true, leaderboard: [] });
+      }
+      // Parse challenge period
+      const startDate = challenge?.startDate instanceof Date
+        ? challenge.startDate
+        : (challenge?.startDate?.toDate?.() || new Date(challenge?.startDate));
+      const endDate = challenge?.endDate instanceof Date
+        ? challenge.endDate
+        : (challenge?.endDate?.toDate?.() || new Date(challenge?.endDate));
+      // For each participant, sum steps for the challenge period
+      await Promise.all(participantIds.map(async (uid) => {
+        let total = 0;
+        let d = new Date(startDate);
+        while (d <= endDate) {
+          const dateStr = d.toISOString().split('T')[0];
+          try {
+            const stepsDoc = await adminDb.collection('users').doc(uid).collection('steps').doc(dateStr).get();
+            if (stepsDoc.exists) {
+              const data = stepsDoc.data() || {};
+              total += (data.steps || 0);
+            }
+          } catch (e) {
+            console.error('Error reading steps for user', uid, 'on', dateStr, e);
+          }
+          d.setDate(d.getDate() + 1);
+        }
+        userStepsMap[uid] = total;
+      }));
+    } else {
+      // No challengeId: fallback to all users (original logic)
+      try {
+        const stepsGroup = adminDb.collectionGroup('steps').where('date', '==', today);
+        const stepsSnap = await stepsGroup.get();
+        stepsSnap.forEach((doc: any) => {
+          const data = doc.data();
+          const userRef = doc.ref.parent.parent;
+          if (!userRef) return;
+          const uid = userRef.id;
+          userStepsMap[uid] = (userStepsMap[uid] || 0) + (data.steps || 0);
+        });
+      } catch (cgError) {
+        // collectionGroup may fail in certain environments or require indexes — fall back to per-user reads
+        console.warn('collectionGroup failed, falling back to per-user reads:', cgError);
+        const usersSnap = await adminDb.collection('users').get();
+        await Promise.all(usersSnap.docs.map(async (u: any) => {
+          try {
+            const stepsDoc = await adminDb.collection('users').doc(u.id).collection('steps').doc(today).get();
+            if (stepsDoc.exists) {
+              const data = stepsDoc.data() || {};
+              userStepsMap[u.id] = (data.steps || 0);
+            }
+          } catch (e) {
+            console.error('Error reading steps for user', u.id, e);
+          }
+        }));
+      }
+      participantIds = Object.keys(userStepsMap);
     }
 
     const userIds = Object.keys(userStepsMap);

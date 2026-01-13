@@ -1,4 +1,6 @@
 import { Buffer } from 'node:buffer'
+import { getAdmin } from '@/lib/firebase-admin'
+import { FieldValue } from 'firebase-admin/firestore'
 
 const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -70,6 +72,51 @@ export async function exchangeCodeForMobileResponse(code: string): Promise<Mobil
   }
 
   const userInfo: GoogleUserInfo = await userResponse.json()
+
+  // Create or update user in Firestore
+  try {
+    const { adminDb } = await getAdmin()
+    if (adminDb) {
+      // Prefer locating an existing user by email (web users often have an
+      // email-based document). If a user exists with the same email, we'll
+      // treat that doc as canonical and attach the Google id to it. This
+      // avoids creating duplicate profiles for the same person.
+      let userRef = adminDb.collection('users').doc(userInfo.id)
+
+      // Try to find an existing user by email
+      const qSnap = await adminDb.collection('users').where('email', '==', userInfo.email).limit(1).get()
+      if (!qSnap.empty) {
+        const existing = qSnap.docs[0]
+        userRef = adminDb.collection('users').doc(existing.id)
+        // Merge/attach Google id to existing doc
+        await userRef.set({
+          googleId: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          image: userInfo.picture || null,
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true })
+        console.log('[Mobile Auth] Attached Google id to existing user:', existing.id)
+      } else {
+        // No existing user with the email — create a new document keyed by
+        // the Google id so mobile-only users still get a stable id.
+        await userRef.set({
+          id: userInfo.id,
+          googleId: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          image: userInfo.picture || null,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+          challenges: [],
+        })
+        console.log('[Mobile Auth] Created new user document for Google id:', userInfo.id)
+      }
+    }
+  } catch (error) {
+    console.error('[Mobile Auth] Failed to create/update user in Firestore:', error)
+    // Don't fail the auth flow if Firestore update fails
+  }
 
   const response: MobileAuthResponse = {
     tokens: {
