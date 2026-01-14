@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.ProgressBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -68,7 +69,9 @@ fun SignInScreen(
                 onClick = onSignInClick
             )
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.padding(top = 24.dp))
+                AndroidView(factory = { context ->
+                    ProgressBar(context).apply { isIndeterminate = true }
+                }, modifier = Modifier.padding(top = 24.dp))
             }
         }
     }

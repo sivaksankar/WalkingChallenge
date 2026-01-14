@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.ProgressBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +22,11 @@ fun SplashScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        AndroidView(factory = { context ->
+            ProgressBar(context).apply {
+                isIndeterminate = true
+            }
+        }, modifier = Modifier.size(48.dp))
         Text(
             text = "Preparing your strides...",
             style = MaterialTheme.typography.bodyMedium,
