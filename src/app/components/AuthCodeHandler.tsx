@@ -13,7 +13,9 @@ export default function AuthCodeHandler() {
     (async () => {
       try {
         if (error) {
-          console.warn('Auth error from callback:', decodeURIComponent(error))
+          let parsed = error
+          try { parsed = JSON.parse(error) } catch (_) { /* fall back to raw */ }
+          console.warn('Auth error from callback:', parsed)
           // clean up and navigate to sign-in page
           window.localStorage.removeItem('auth_error')
           window.location.href = '/auth/signin'

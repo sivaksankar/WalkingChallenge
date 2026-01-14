@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const response = await exchangeCodeForMobileResponse(body.code)
+    // Use the redirectUri provided by the client if present (this must match
+    // the redirect used when the code was issued), otherwise fall back to the
+    // configured MOBILE_REDIRECT_URI.
+    const response = await exchangeCodeForMobileResponse(body.code, body.redirectUri)
 
     return NextResponse.json(response, {
       headers: {

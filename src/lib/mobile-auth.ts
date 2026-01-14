@@ -12,6 +12,7 @@ export interface MobileAuthResponse {
   tokens: {
     accessToken: string
     refreshToken: string
+    idToken?: string
     expiresIn: number
   }
   profile: {
@@ -37,7 +38,9 @@ interface GoogleUserInfo {
   picture?: string
 }
 
-export async function exchangeCodeForMobileResponse(code: string): Promise<MobileAuthResponse> {
+export async function exchangeCodeForMobileResponse(code: string, redirectUri?: string): Promise<MobileAuthResponse> {
+  const redirect_to_use = (redirectUri || MOBILE_REDIRECT_URI).replace(/\/?$/, '')
+  console.log('Exchanging code with redirect URI:', redirect_to_use)
   const tokenResponse = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -48,14 +51,18 @@ export async function exchangeCodeForMobileResponse(code: string): Promise<Mobil
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: MOBILE_REDIRECT_URI,
+      redirect_uri: redirect_to_use,
     }),
   })
 
   if (!tokenResponse.ok) {
-    const error = await tokenResponse.text()
-    console.error('Google token exchange failed:', error)
-    throw new Error('Failed to exchange authorization code')
+    const status = tokenResponse.status
+    const statusText = tokenResponse.statusText
+    const contentType = tokenResponse.headers.get('content-type') || 'unknown'
+    const body = await tokenResponse.text()
+    const snippet = body ? body.slice(0, 1200) : ''
+    console.error(`Google token exchange failed: status=${status} statusText=${statusText} contentType=${contentType} bodyLength=${body.length} bodySnippet=${snippet}`)
+    throw new Error(`Failed to exchange authorization code (status=${status})`)
   }
 
   const tokens: GoogleTokenResponse = await tokenResponse.json()
@@ -122,6 +129,7 @@ export async function exchangeCodeForMobileResponse(code: string): Promise<Mobil
     tokens: {
       accessToken: String(tokens.access_token),
       refreshToken: String(tokens.refresh_token || ''),
+      idToken: String(tokens.id_token || ''),
       expiresIn: Number(tokens.expires_in),
     },
     profile: {

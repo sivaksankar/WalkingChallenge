@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       participants: [],
       isActive: true,
       createdAt: new Date(),
+      createdBy: session.user.email,
     });
 
     const created = await docRef.get();

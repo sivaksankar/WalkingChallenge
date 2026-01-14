@@ -41,10 +41,9 @@ export const joinChallenge = async (challengeId: string) => {
 };
 
 export const getChallengeLeaderboard = async (challengeId: string) => {
-  // For now, fall back to existing client-side or server endpoint later.
-  const res = await fetch(`/api/challenges`);
+  // Fetch leaderboard for a specific challenge
+  const res = await fetch(`/api/leaderboard?challengeId=${encodeURIComponent(challengeId)}`);
   const json = await res.json();
-  if (!res.ok || !json.success) throw new Error(json.error || 'Failed to load challenge');
-  // Not implemented: compute leaderboard server-side yet.
-  return [];
+  if (!res.ok || !json.success) throw new Error(json.error || 'Failed to load leaderboard');
+  return json.leaderboard || [];
 };

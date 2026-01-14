@@ -58,6 +58,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
     // Get Firestore instance
     const db = await getFirestoreInstance();
 
+    // Log which Google client id we're using (partial) to help debug redirect issues
+    try {
+      console.log('getAuthOptions: GOOGLE_CLIENT_ID (last8):', googleClientId?.slice(-8));
+    } catch (e) {
+      // ignore
+    }
+
     // Ensure the Firebase Client SDK is initialized (some adapters expect a client app)
     let clientDb: any = null;
     const clientConfig = {
@@ -136,7 +143,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           // On sign in, add user id to token
           if (user) {
             token.id = user.id;
-            console.log('[JWT] Added user.id to token:', token.id);
+            console.log('[JWT] Added user.id to token (from user):', token.id);
+          } else if (token?.sub && !token.id) {
+            // For subsequent requests token.sub often contains the subject id.
+            // Ensure we surface it as token.id so session callback can populate
+            // session.user.id consistently.
+            token.id = token.sub as string;
+            console.log('[JWT] Populated token.id from token.sub:', token.id);
           }
           return token;
         },
@@ -163,11 +176,24 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
         error: '/auth/signin',
       },
       secret: nextAuthSecret,
-      debug: process.env.NODE_ENV === 'development',
+      debug: true,
       // Trust proxy headers when behind Firebase Hosting/Cloud Run
       trustHost: true,
-      // Use plain cookie names without __Secure-/__Host- prefixes
-      useSecureCookies: false,
+      // Use secure cookies in production
+      useSecureCookies: process.env.NODE_ENV === 'production',
+      cookies: {
+        sessionToken: {
+          name: process.env.NODE_ENV === 'production' 
+            ? '__Secure-next-auth.session-token' 
+            : 'next-auth.session-token',
+          options: {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            secure: process.env.NODE_ENV === 'production',
+          },
+        },
+      },
     };
   } catch (error) {
     console.error('Error in getAuthOptions:', error);

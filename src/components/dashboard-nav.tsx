@@ -4,15 +4,24 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Profile', href: '/dashboard/profile' },
-  { name: 'Settings', href: '/dashboard/settings' },
-];
+const ADMIN_EMAIL = 'sivaksankar@gmail.com';
 
 export function DashboardNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Profile', href: '/dashboard/profile' },
+    { name: 'Settings', href: '/dashboard/settings' },
+  ];
+
+  // Append admin navigation only for the designated admin email
+  if (user?.email === ADMIN_EMAIL) {
+    navigation.push({ name: 'Admin', href: '/dashboard/admin' });
+  }
 
   return (
     <nav className="bg-white shadow-sm">
