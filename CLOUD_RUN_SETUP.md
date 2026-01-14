@@ -52,7 +52,7 @@ gcloud run deploy nextjs-app \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars NEXTAUTH_URL=https://walking-challenge-cd6dd.web.app,NEXTAUTH_SECRET=NEXTAUTH_SECRET_REDACTED=
+  --set-env-vars NEXTAUTH_URL=https://walking-challenge-cd6dd.web.app,NEXTAUTH_SECRET=REDACTED
 
 # Deploy Firebase Hosting
 firebase deploy --only hosting
