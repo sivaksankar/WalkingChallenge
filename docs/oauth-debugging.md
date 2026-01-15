@@ -21,3 +21,11 @@ Manual testing steps
    - `[SessionRetry]` — client-side messages about retry attempts
 
 If you still see intermittent empty sessions after these changes, reproduce the issue and paste the timestamp here so we can pull the logs around that window and inspect the full request/response exchange.
+
+Landing page
+
+- A new landing page `/auth/landing` will be used as the OAuth post-redirect landing target. It polls `/api/auth/session` for several short attempts and redirects to `/dashboard` when a session appears. This reduces the timing-race between Set-Cookie and client-side session fetches.
+
+Client updates
+
+- Sign-in buttons now pass `callbackUrl: '/auth/landing'` when calling `signIn('google', ...)` so all Google OAuth flows land on the landing page.

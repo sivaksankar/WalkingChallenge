@@ -22,7 +22,7 @@ export default function SignUpPage() {
         </div>
         <div className="mt-8 space-y-6">
           <Button
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            onClick={() => signIn('google', { callbackUrl: '/auth/landing' })}
             className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
             variant="outline"
           >

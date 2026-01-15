@@ -7,7 +7,7 @@ export default function GoogleSignInButton() {
   const handleSignIn = async () => {
     try {
       console.log('[GoogleSignInButton] Starting Google sign-in...');
-      await signIn('google', { callbackUrl: '/dashboard' });
+      await signIn('google', { callbackUrl: '/auth/landing' });
       console.log('[GoogleSignInButton] signIn() completed');
     } catch (error) {
       console.error('Error signing in with Google:', error);
