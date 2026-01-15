@@ -9,8 +9,11 @@ export default function AuthLandingPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const RELOAD_FLAG = 'authLandingReloaded';
-    const alreadyReloaded = typeof window !== 'undefined' && !!window.sessionStorage.getItem(RELOAD_FLAG);
+    const RELOAD_FLAG = 'authLandingReloadedAt';
+    const reloadWindowMs = 60 * 1000; // allow another reload after this many ms
+    const alreadyReloadedAt =
+      typeof window !== 'undefined' ? Number(window.sessionStorage.getItem(RELOAD_FLAG) || '0') : 0;
+    const alreadyReloaded = Date.now() - alreadyReloadedAt < reloadWindowMs;
 
     async function pollSession() {
       // Increase attempts and interval to be more tolerant of slow cookie propagation
@@ -39,7 +42,7 @@ export default function AuthLandingPage() {
                 // eslint-disable-next-line no-console
                 console.log('[AuthLanding] first-empty session — reloading once to commit cookies');
                 // mark reloaded so we don't repeatedly reload
-                window.sessionStorage.setItem(RELOAD_FLAG, '1');
+                window.sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
                 await new Promise((r) => setTimeout(r, 300));
                 window.location.reload();
                 return; // reload will navigate away
