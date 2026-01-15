@@ -54,7 +54,14 @@ const handler = async (req: Request, context: any) => {
         cookies.forEach((cookie) => {
           const name = cookie.split('=')[0];
           const hasToken = cookie.includes('eyJ');
-          console.log('[Route Handler] Cookie:', name, hasToken ? '(has JWT token)' : '(no token)');
+          const lower = cookie.toLowerCase();
+          const attrs = {
+            sameSiteNone: lower.includes('samesite=none'),
+            secure: lower.includes('secure'),
+            domain: /domain=([^;]+)/i.test(cookie) ? RegExp.$1 : null,
+            length: cookie.length,
+          };
+          console.log('[Route Handler] Cookie:', name, hasToken ? '(has JWT token)' : '(no token)', attrs);
         });
       }
     }
