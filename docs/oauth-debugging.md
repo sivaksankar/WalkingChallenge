@@ -26,6 +26,8 @@ Landing page
 
 - A new landing page `/auth/landing` will be used as the OAuth post-redirect landing target. It polls `/api/auth/session` for several short attempts and redirects to `/dashboard` when a session appears. This reduces the timing-race between Set-Cookie and client-side session fetches.
 
+- Update: Increased landing page polling to 12 attempts with ~700ms interval (total ~8.4s) to make it more tolerant of slow cookie propagation. If no session is detected after retries the landing page redirects to `/dashboard` as a final fallback.
+
 Client updates
 
 - Sign-in buttons now pass `callbackUrl: '/auth/landing'` when calling `signIn('google', ...)` so all Google OAuth flows land on the landing page.

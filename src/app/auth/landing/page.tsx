@@ -11,7 +11,11 @@ export default function AuthLandingPage() {
     let cancelled = false;
 
     async function pollSession() {
-      for (let i = 0; i < 6 && !cancelled; i++) {
+      // Increase attempts and interval to be more tolerant of slow cookie propagation
+      const maxAttempts = 12; // ~8.4s total with 700ms interval
+      let delayMs = 700;
+
+      for (let i = 0; i < maxAttempts && !cancelled; i++) {
         try {
           // eslint-disable-next-line no-console
           console.log('[AuthLanding] checking session attempt', i + 1);
@@ -30,14 +34,15 @@ export default function AuthLandingPage() {
           console.warn('[AuthLanding] session check failed', err);
         }
         setAttempt((a) => a + 1);
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, delayMs));
       }
 
       if (!cancelled) {
-        // Final fallback: reload to let SessionProvider detect session, then go to dashboard
+        // Final fallback: attempt to navigate to dashboard to let a full page load
+        // pick up cookies; if not signed-in the page will show the sign-in UI.
         // eslint-disable-next-line no-console
-        console.log('[AuthLanding] session not detected after retries — reloading');
-        window.location.replace('/');
+        console.log('[AuthLanding] session not detected after retries — redirecting to /dashboard');
+        window.location.replace('/dashboard');
       }
     }
 
