@@ -61,6 +61,28 @@ const handler = async (req: Request, context: any) => {
 
     console.log('[Route Handler]', path, '- Response status:', response?.status);
 
+    // If this was an OAuth callback (e.g. /api/auth/callback/google) then
+    // NextAuth typically returns a 302 to the callbackUrl. To avoid the
+    // cookie-commit race where the client immediately requests /api/auth/session
+    // before the browser attaches cookies from the redirect response, override
+    // the callback redirect to point to `/auth/commit` which will perform a
+    // short client-side delay then navigate to `/auth/landing`.
+    if (path.startsWith('/api/auth/callback') && response?.status && String(response.status).startsWith('3')) {
+      try {
+        const cookies = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
+        console.log('[Route Handler] Callback detected; overriding redirect to /auth/commit and preserving', cookies?.length ?? 0, 'Set-Cookie headers');
+
+        const headers: Array<[string, string]> = [['location', '/auth/commit']];
+        if (cookies && cookies.length) {
+          cookies.forEach((c: string) => headers.push(['set-cookie', c]));
+        }
+
+        return new Response('', { status: 302, headers });
+      } catch (err) {
+        console.warn('[Route Handler] failed to override callback redirect', err);
+      }
+    }
+
     // Additional short-lived debug: for session endpoint, log a small summary
     // of the response body so we can see whether a session object is present.
     try {
