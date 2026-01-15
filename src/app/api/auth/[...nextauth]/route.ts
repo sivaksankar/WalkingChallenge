@@ -67,6 +67,13 @@ const handler = async (req: Request, context: any) => {
     }
 
     console.log('[Route Handler]', path, '- Response status:', response?.status);
+    // Log original redirect location (if any) for debugging redirect/cookie flow
+    try {
+      const origLocation = response?.headers?.get && response.headers.get('location');
+      if (origLocation) console.log('[Route Handler] Original redirect location:', origLocation);
+    } catch (e) {
+      console.warn('[Route Handler] failed to read response location header', e);
+    }
 
     // If this was an OAuth callback (e.g. /api/auth/callback/google) then
     // NextAuth typically returns a 302 to the callbackUrl. To avoid the
