@@ -9,6 +9,8 @@ export default function AuthLandingPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const RELOAD_FLAG = 'authLandingReloaded';
+    const alreadyReloaded = typeof window !== 'undefined' && !!window.sessionStorage.getItem(RELOAD_FLAG);
 
     async function pollSession() {
       // Increase attempts and interval to be more tolerant of slow cookie propagation
@@ -27,6 +29,24 @@ export default function AuthLandingPage() {
               console.log('[AuthLanding] session present, redirecting to /dashboard');
               router.replace('/dashboard');
               return;
+            }
+            // If this is the first attempt and there was no session, perform a
+            // one-time reload after a short delay to ensure the browser commits
+            // cookies set by the OAuth callback. Use sessionStorage to avoid
+            // reload loops across repeated attempts.
+            if (i === 0 && !alreadyReloaded) {
+              try {
+                // eslint-disable-next-line no-console
+                console.log('[AuthLanding] first-empty session — reloading once to commit cookies');
+                // mark reloaded so we don't repeatedly reload
+                window.sessionStorage.setItem(RELOAD_FLAG, '1');
+                await new Promise((r) => setTimeout(r, 300));
+                window.location.reload();
+                return; // reload will navigate away
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[AuthLanding] reload failed', e);
+              }
             }
           }
         } catch (err) {
