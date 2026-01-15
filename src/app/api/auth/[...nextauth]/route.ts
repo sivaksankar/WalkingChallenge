@@ -10,7 +10,14 @@ const handler = async (req: Request, context: any) => {
   const path = url.pathname;
   const cookieHeader = req.headers.get('cookie');
   console.log('[Route Handler] Request:', req.method, path);
-  console.log('[Route Handler] Cookies received:', cookieHeader ? cookieHeader.substring(0, 200) + '...' : 'NONE');
+  console.log('[Route Handler] Query:', url.searchParams.toString() || '(none)');
+  console.log('[Route Handler] Headers:', {
+    host: req.headers.get('host'),
+    origin: req.headers.get('origin'),
+    referer: req.headers.get('referer'),
+    'user-agent': req.headers.get('user-agent'),
+  });
+  console.log('[Route Handler] Cookies received:', cookieHeader ? cookieHeader.substring(0, 300) + '...' : 'NONE');
   
   try {
     const authOptions = await getAuthOptions();

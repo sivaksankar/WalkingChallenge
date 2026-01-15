@@ -112,6 +112,10 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       }
     }
 
+    // Log provider configuration (non-sensitive data only)
+    console.log('getAuthOptions: Using Google client id:', googleClientId);
+    console.log('getAuthOptions: NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+
     return {
       providers: [
         GoogleProvider({
@@ -140,6 +144,10 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           }
           return token;
         },
+        async signIn({ user, account, profile }) {
+          console.log('[Callback][signIn] user:', user?.id, 'provider:', account?.provider, 'accountId:', account?.providerAccountId);
+          return true;
+        },
         async redirect({ url, baseUrl }) {
           console.log('[Redirect] url:', url, 'baseUrl:', baseUrl);
           return url.startsWith(baseUrl) ? url : baseUrl + '/dashboard';
@@ -163,11 +171,41 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
         error: '/auth/signin',
       },
       secret: nextAuthSecret,
+      // Custom logger and events to capture additional debug info for OAuth
+      // flows and token exchange errors.
+      logger: {
+        log: (...args: any[]) => console.log('[next-auth]', ...args),
+        error: (...args: any[]) => console.error('[next-auth][error]', ...args),
+        warn: (...args: any[]) => console.warn('[next-auth][warn]', ...args),
+      },
+      events: {
+        async signIn({ user, account, profile, isNewUser }) {
+          console.log('[NextAuth event][signIn]', { user: user?.id, provider: account?.provider, isNewUser });
+        },
+        async signOut({ token }) {
+          console.log('[NextAuth event][signOut]', { token: token?.sub });
+        },
+        async error({ error }) {
+          console.error('[NextAuth event][error]', error);
+        },
+      },
       debug: process.env.NODE_ENV === 'development',
       // Trust proxy headers when behind Firebase Hosting/Cloud Run
       trustHost: true,
-      // Use plain cookie names without __Secure-/__Host- prefixes
-      useSecureCookies: false,
+      // Use secure cookies in production and ensure cookies work across the OAuth
+      // redirect flow by using SameSite=None + Secure when running on HTTPS.
+      useSecureCookies: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
+      cookies: {
+        sessionToken: {
+          name: 'next-auth.session-token',
+          options: {
+            httpOnly: true,
+            sameSite: 'none',
+            path: '/',
+            secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
+          },
+        },
+      },
     };
   } catch (error) {
     console.error('Error in getAuthOptions:', error);
