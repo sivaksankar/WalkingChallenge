@@ -136,12 +136,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       adapter: adapterInstance,
       callbacks: {
         async jwt({ token, user, account, profile }) {
-          console.log('[JWT] callback triggered - user:', user?.id, 'token.sub:', token?.sub);
+          console.log('[JWT] callback triggered - user:', user?.id, 'token.sub:', token?.sub, 'account:', account?.provider);
           // On sign in, add user id to token
           if (user) {
             token.id = user.id;
             console.log('[JWT] Added user.id to token:', token.id);
           }
+          console.log('[JWT] returning token:', { id: token.id, sub: token.sub, email: token.email });
           return token;
         },
         async signIn({ user, account, profile }) {
@@ -153,12 +154,12 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           return url.startsWith(baseUrl) ? url : baseUrl + '/dashboard';
         },
         async session({ session, token }) {
-          console.log('[Session] callback - token.id:', token?.id, 'token.sub:', token?.sub);
+          console.log('[Session] callback - token.id:', token?.id, 'token.sub:', token?.sub, 'session.user:', session?.user?.email);
           // Add user id from token to session
           if (session?.user && token?.id) {
             session.user.id = token.id as string;
           }
-          console.log('[Session] returning user:', session?.user?.email);
+          console.log('[Session] returning user:', session?.user?.id, session?.user?.email);
           return session;
         },
       },
@@ -200,7 +201,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           name: 'next-auth.session-token',
           options: {
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'lax',
             path: '/',
             secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
           },

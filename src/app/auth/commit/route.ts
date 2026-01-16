@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         <p style="margin-bottom:8px;color:#4b5563;">Finalizing sign-in…</p>
         <p style="font-size:12px;color:#6b7280">If you are not redirected, <a href="/auth/landing">click here</a>.</p>
       </div>
-      <script>setTimeout(()=>{location.replace('/auth/landing')},400)</script>
+      <script>setTimeout(()=>{location.replace('/auth/landing')},1000)</script>
     </body>
   </html>`;
 

@@ -3,11 +3,21 @@ import { getAdmin } from '@/lib/firebase-admin';
 
 export async function GET() {
   console.log('\n=== Starting Test Request ===');
-  console.log('Environment Variables:', {
+  const envSummary = {
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL ? '***EMAIL_SET***' : 'NOT_SET',
-    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY ? '***PRIVATE_KEY_SET***' : 'NOT_SET'
-  });
+    privateKey: (process.env.FIREBASE_ADMIN_PRIVATE_KEY || process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64 || process.env.ADMIN_PRIVATE_KEY) ? '***PRIVATE_KEY_SET***' : 'NOT_SET'
+  };
+  console.log('Environment Variables:', envSummary);
+
+  // If Firebase Admin is not configured in the build environment, skip the
+  // runtime test. This prevents noisy build-time failures when secrets are
+  // intentionally not available during build (they are injected at runtime)
+  // e.g., via Cloud Run secret mappings or service account credentials.
+  if (!process.env.FIREBASE_ADMIN_CLIENT_EMAIL || (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_PRIVATE_KEY_B64 && !process.env.ADMIN_PRIVATE_KEY)) {
+    console.log('Firebase Admin not configured for this environment — skipping test.');
+    return NextResponse.json({ success: true, message: 'Skipped Firebase Admin test (admin env not present)' });
+  }
 
   try {
     console.log('\nAttempting to access Firestore...');

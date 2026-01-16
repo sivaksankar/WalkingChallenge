@@ -86,13 +86,17 @@ const handler = async (req: Request, context: any) => {
         const cookies = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
         console.log('[Route Handler] Callback detected; overriding redirect to /auth/commit and preserving', cookies?.length ?? 0, 'Set-Cookie headers');
 
-        // Force the redirect to the same Cloud Run host (absolute URL) so that
-        // cookies set on the callback response (hosted on *.run.app) will be
-        // applicable to the following navigation. This prevents the browser
-        // from navigating to the web.app host where the cookies would be
-        // host-mismatched and therefore not sent.
-        const runAppHost = 'https://nextjs-app-409798850238.us-central1.run.app';
-        const headers: Array<[string, string]> = [['location', `${runAppHost}/auth/commit`]];
+        // Use NEXTAUTH_URL to determine the correct host for the redirect
+        const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const commitUrl = `${nextAuthUrl}/auth/commit`;
+        console.log('[Route Handler] Using commit URL:', commitUrl);
+
+        // Force the redirect to the same host where auth is handled so that
+        // cookies set on the callback response will be applicable to the
+        // following navigation. This prevents the browser from navigating
+        // to a different host where the cookies would be host-mismatched
+        // and therefore not sent.
+        const headers: Array<[string, string]> = [['location', commitUrl]];
         if (cookies && cookies.length) {
           cookies.forEach((c: string) => headers.push(['set-cookie', c]));
         }

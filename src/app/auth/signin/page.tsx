@@ -17,7 +17,7 @@ export default function SignInPage() {
       console.log('Initiating Google sign-in...');
       
       const result = await signIn('google', { 
-        callbackUrl: '/auth/landing',
+        callbackUrl: '/auth/commit',
         redirect: true 
       });
       

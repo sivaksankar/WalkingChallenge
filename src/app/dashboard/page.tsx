@@ -26,7 +26,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     console.log('[Dashboard] status:', status, 'session:', session?.user?.email || 'null');
-  }, [status, session]);
+    if (status === 'unauthenticated') {
+      console.log('[Dashboard] No session, redirecting to login');
+      router.push('/login');
+    }
+  }, [status, session, router]);
 
   // Handle loading and unauthenticated states
   if (status === 'loading' || !isClient) {

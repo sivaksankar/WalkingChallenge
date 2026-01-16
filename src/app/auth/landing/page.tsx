@@ -9,67 +9,32 @@ export default function AuthLandingPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const RELOAD_FLAG = 'authLandingReloadedAt';
-    const reloadWindowMs = 60 * 1000; // allow another reload after this many ms
-    const alreadyReloadedAt =
-      typeof window !== 'undefined' ? Number(window.sessionStorage.getItem(RELOAD_FLAG) || '0') : 0;
-    const alreadyReloaded = Date.now() - alreadyReloadedAt < reloadWindowMs;
 
-    async function pollSession() {
-      // Increase attempts and interval to be more tolerant of slow cookie propagation
-      const maxAttempts = 12; // ~8.4s total with 700ms interval
-      let delayMs = 700;
-
-      for (let i = 0; i < maxAttempts && !cancelled; i++) {
-        try {
-          // eslint-disable-next-line no-console
-          console.log('[AuthLanding] checking session attempt', i + 1);
-          const res = await fetch('/api/auth/session', { credentials: 'include' });
-          if (res.ok) {
-            const json = await res.json();
-            if (json && json.user) {
-              // eslint-disable-next-line no-console
-              console.log('[AuthLanding] session present, redirecting to /dashboard');
-              router.replace('/dashboard');
-              return;
-            }
-            // If this is the first attempt and there was no session, perform a
-            // one-time reload after a short delay to ensure the browser commits
-            // cookies set by the OAuth callback. Use sessionStorage to avoid
-            // reload loops across repeated attempts.
-            if (i === 0 && !alreadyReloaded) {
-              try {
-                // eslint-disable-next-line no-console
-                console.log('[AuthLanding] first-empty session — reloading once to commit cookies');
-                // mark reloaded so we don't repeatedly reload
-                window.sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
-                await new Promise((r) => setTimeout(r, 300));
-                window.location.reload();
-                return; // reload will navigate away
-              } catch (e) {
-                // eslint-disable-next-line no-console
-                console.warn('[AuthLanding] reload failed', e);
-              }
-            }
+    async function checkSession() {
+      try {
+        console.log('[AuthLanding] Checking session...');
+        const res = await fetch('/api/auth/session', { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          console.log('[AuthLanding] Session response:', { hasUser: !!json.user, userEmail: json.user?.email });
+          if (json && json.user) {
+            console.log('[AuthLanding] Session found, redirecting to /dashboard');
+            router.replace('/dashboard');
+            return;
           }
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.warn('[AuthLanding] session check failed', err);
         }
-        setAttempt((a) => a + 1);
-        await new Promise((r) => setTimeout(r, delayMs));
+      } catch (err) {
+        console.warn('[AuthLanding] Session check failed', err);
       }
 
       if (!cancelled) {
-        // Final fallback: attempt to navigate to dashboard to let a full page load
-        // pick up cookies; if not signed-in the page will show the sign-in UI.
-        // eslint-disable-next-line no-console
-        console.log('[AuthLanding] session not detected after retries — redirecting to /dashboard');
-        window.location.replace('/dashboard');
+        console.log('[AuthLanding] No session found, redirecting to /dashboard (will show login)');
+        router.replace('/dashboard');
       }
     }
 
-    pollSession();
+    // Wait a bit for cookies to be committed, then check session
+    setTimeout(checkSession, 1000);
 
     return () => {
       cancelled = true;
@@ -80,7 +45,7 @@ export default function AuthLandingPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
         <p className="mb-2 text-sm text-gray-600">Finalizing sign-in…</p>
-        <p className="text-xs text-gray-500">Attempt {attempt + 1} of 6</p>
+        <p className="text-xs text-gray-500">Checking session...</p>
       </div>
     </div>
   );
