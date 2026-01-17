@@ -212,6 +212,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
             sameSite: 'lax',
             path: '/',
             secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
+            domain: process.env.NODE_ENV === 'production' ? '.web.app' : undefined,
           },
         },
       },
