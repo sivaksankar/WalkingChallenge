@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 function redact(cookieStr: string | null) {
   if (!cookieStr) return 'NONE';
   try {
