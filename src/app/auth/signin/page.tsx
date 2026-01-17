@@ -14,14 +14,16 @@ export default function SignInPage() {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Initiating Google sign-in...');
+      console.log('[SignInPage] ===== GOOGLE SIGN-IN START =====');
+      console.log('[SignInPage] Initiating Google sign-in...');
       
       const result = await signIn('google', { 
         callbackUrl: '/auth/commit',
         redirect: true 
       });
       
-      console.log('Sign-in result:', result);
+      console.log('[SignInPage] signIn() result:', result);
+      console.log('[SignInPage] ===== GOOGLE SIGN-IN END =====');
       
       if (result?.error) {
         console.error('Sign-in error:', result.error);

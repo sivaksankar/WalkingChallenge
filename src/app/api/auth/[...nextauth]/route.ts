@@ -31,6 +31,7 @@ const handler = async (req: Request, context: any) => {
     }
   }
 
+  console.log('[Route Handler] ===== AUTH REQUEST START =====');
   console.log('[Route Handler] Request:', req.method, path);
   console.log('[Route Handler] Query:', url.searchParams.toString() || '(none)');
   console.log('[Route Handler] Headers:', {
@@ -40,6 +41,9 @@ const handler = async (req: Request, context: any) => {
     'user-agent': req.headers.get('user-agent'),
   });
   console.log('[Route Handler] Cookies received:', redactCookies(cookieHeader));
+  console.log('[Route Handler] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.log('[Route Handler] Host header:', req.headers.get('host'));
+  console.log('[Route Handler] ===== AUTH REQUEST END =====');
   console.log('[Route Handler] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
   console.log('[Route Handler] Host header:', req.headers.get('host'));
   

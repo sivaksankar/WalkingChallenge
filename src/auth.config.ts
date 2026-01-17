@@ -50,6 +50,9 @@ const getFirestoreInstance = async (): Promise<Firestore> => {
 
 // Get the auth options
 export const getAuthOptions = async (): Promise<AuthOptions> => {
+  console.log('[getAuthOptions] ===== GET AUTH OPTIONS START =====');
+  console.log('[getAuthOptions] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.log('[getAuthOptions] NODE_ENV:', process.env.NODE_ENV);
   try {
     const googleClientId = getEnvVar('GOOGLE_CLIENT_ID');
     const googleClientSecret = getEnvVar('GOOGLE_CLIENT_SECRET');
