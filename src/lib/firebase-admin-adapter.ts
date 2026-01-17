@@ -99,23 +99,24 @@ export function AdminFirestoreAdapter(db: Firestore) {
     },
 
     async getSessionAndUser(sessionToken: string) {
-      console.log('[Adapter] getSessionAndUser looking for:', sessionToken?.substring(0, 10) + '...');
+      console.log('[Adapter] getSessionAndUser called with token:', sessionToken?.substring(0, 20) + '...');
       const q = sessionsRef.where('sessionToken', '==', sessionToken).limit(1);
       const snaps = await q.get();
-      console.log('[Adapter] getSessionAndUser found', snaps.size, 'documents');
+      console.log('[Adapter] getSessionAndUser query returned', snaps.size, 'documents');
       const sessionDoc = snaps.docs[0];
       if (!sessionDoc) {
-        console.log('[Adapter] getSessionAndUser: session not found');
+        console.log('[Adapter] getSessionAndUser: session not found for token');
         return null;
       }
       const session = convertTimestamps({ id: sessionDoc.id, ...sessionDoc.data() }) as any;
+      console.log('[Adapter] getSessionAndUser found session:', { id: session.id, userId: session.userId, expires: session.expires });
       const userSnap = await usersRef.doc((session as any).userId).get();
       if (!userSnap.exists) {
-        console.log('[Adapter] getSessionAndUser: user not found');
+        console.log('[Adapter] getSessionAndUser: user not found for userId:', (session as any).userId);
         return null;
       }
       const user = { id: userSnap.id, ...userSnap.data() } as any;
-      console.log('[Adapter] getSessionAndUser returning:', { userEmail: user?.email, sessionExpires: session?.expires });
+      console.log('[Adapter] getSessionAndUser returning session and user:', { sessionId: session.id, userId: user.id, userEmail: user.email });
       return { session, user };
     },
 

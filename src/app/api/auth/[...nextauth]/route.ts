@@ -40,6 +40,8 @@ const handler = async (req: Request, context: any) => {
     'user-agent': req.headers.get('user-agent'),
   });
   console.log('[Route Handler] Cookies received:', redactCookies(cookieHeader));
+  console.log('[Route Handler] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.log('[Route Handler] Host header:', req.headers.get('host'));
   
   try {
     const authOptions = await getAuthOptions();
