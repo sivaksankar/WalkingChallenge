@@ -21,7 +21,9 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('[LoginPage] ===== LOGIN PAGE LOADED =====');
     console.log('[LoginPage] status:', status, 'session:', session?.user?.email);
+    console.log('[LoginPage] Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
     if (status === 'authenticated') {
       console.log('[LoginPage] Redirecting to dashboard');
       router.push('/dashboard');

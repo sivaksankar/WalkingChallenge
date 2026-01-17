@@ -20,9 +20,13 @@ function redact(cookieStr: string | null) {
 }
 
 export async function GET(req: Request) {
+  console.log('[AuthCommit] ===== COMMIT PAGE LOADED =====');
+  console.log('[AuthCommit] Request URL:', req.url);
+  console.log('[AuthCommit] Request headers:', Object.fromEntries(req.headers.entries()));
+  
   const cookieHeader = req.headers.get('cookie');
-  console.log('[AuthCommit][route] Server Cookies received:', redact(cookieHeader));
-
+  console.log('[AuthCommit] Cookies received:', cookieHeader);
+  
   const html = `<!doctype html>
   <html>
     <head>
@@ -35,10 +39,18 @@ export async function GET(req: Request) {
         <p style="margin-bottom:8px;color:#4b5563;">Finalizing sign-in…</p>
         <p style="font-size:12px;color:#6b7280">If you are not redirected, <a href="/auth/landing">click here</a>.</p>
       </div>
-      <script>setTimeout(()=>{location.replace('/auth/landing')},1000)</script>
+      <script>
+        console.log('[AuthCommit] ===== CLIENT-SIDE SCRIPT START =====');
+        console.log('[AuthCommit] Current cookies:', document.cookie);
+        setTimeout(() => {
+          console.log('[AuthCommit] ===== REDIRECTING TO LANDING =====');
+          location.replace('/auth/landing');
+        }, 1000);
+      </script>
     </body>
   </html>`;
 
+  console.log('[AuthCommit] ===== SENDING HTML RESPONSE =====');
   return new Response(html, {
     status: 200,
     headers: { 'Content-Type': 'text/html' },

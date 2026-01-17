@@ -15,6 +15,7 @@ function convertTimestamps(data: any): any {
 // A minimal NextAuth adapter implementation that uses the Firebase Admin SDK.
 // This implements the methods NextAuth needs during OAuth callback flows.
 export function AdminFirestoreAdapter(db: Firestore) {
+  console.log('[Adapter] ===== ADAPTER INITIALIZED =====');
   const usersRef = db.collection('users');
   const accountsRef = db.collection('accounts');
   const sessionsRef = db.collection('sessions');
@@ -90,11 +91,13 @@ export function AdminFirestoreAdapter(db: Firestore) {
     },
 
     async createSession(session: any) {
+      console.log('[Adapter] ===== CREATE SESSION CALLED =====');
       console.log('[Adapter] createSession input:', { sessionToken: session?.sessionToken, userId: session?.userId, expires: session?.expires });
       const ref = await sessionsRef.add(session);
       const snap = await ref.get();
       const result = convertTimestamps({ id: ref.id, ...snap.data() }) as any;
       console.log('[Adapter] createSession output:', { sessionId: ref.id, userId: result?.userId });
+      console.log('[Adapter] ===== CREATE SESSION COMPLETE =====');
       return result;
     },
 

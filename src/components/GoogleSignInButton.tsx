@@ -6,11 +6,13 @@ import { signIn } from 'next-auth/react';
 export default function GoogleSignInButton() {
   const handleSignIn = async () => {
     try {
+      console.log('[GoogleSignInButton] ===== BUTTON CLICKED =====');
       console.log('[GoogleSignInButton] Starting Google sign-in...');
-      await signIn('google', { callbackUrl: '/auth/commit' });
-      console.log('[GoogleSignInButton] signIn() completed');
+      const result = await signIn('google', { callbackUrl: '/auth/commit' });
+      console.log('[GoogleSignInButton] signIn result:', result);
+      console.log('[GoogleSignInButton] ===== SIGN-IN COMPLETE =====');
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('[GoogleSignInButton] Error:', error);
     }
   };
 

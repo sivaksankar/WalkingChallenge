@@ -25,7 +25,10 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    console.log('[Dashboard] ===== DASHBOARD PAGE LOADED =====');
     console.log('[Dashboard] status:', status, 'session:', session?.user?.email || 'null');
+    console.log('[Dashboard] Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+    console.log('[Dashboard] Cookies:', typeof window !== 'undefined' ? document.cookie : 'SSR');
     if (status === 'unauthenticated') {
       console.log('[Dashboard] No session, redirecting to login');
       router.push('/login');

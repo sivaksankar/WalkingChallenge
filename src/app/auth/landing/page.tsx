@@ -8,36 +8,39 @@ export default function AuthLandingPage() {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
+    console.log('[AuthLanding] ===== PAGE LOADED =====');
+    console.log('[AuthLanding] Current URL:', window.location.href);
+    console.log('[AuthLanding] Cookies:', document.cookie);
 
     async function checkSession() {
+      console.log('[AuthLanding] ===== CHECKING SESSION =====');
       try {
-        console.log('[AuthLanding] Checking session...');
         const res = await fetch('/api/auth/session', { credentials: 'include' });
-        if (res.ok) {
-          const json = await res.json();
-          console.log('[AuthLanding] Session response:', { hasUser: !!json.user, userEmail: json.user?.email });
-          if (json && json.user) {
-            console.log('[AuthLanding] Session found, redirecting to /dashboard');
-            router.replace('/dashboard');
-            return;
-          }
+        console.log('[AuthLanding] Session fetch status:', res.status);
+        const json = await res.json();
+        console.log('[AuthLanding] Session response:', json);
+        if (json && json.user) {
+          console.log('[AuthLanding] Session found, redirecting to /dashboard');
+          router.replace('/dashboard');
+          return;
+        } else {
+          console.log('[AuthLanding] No session found, redirecting to /dashboard (will show login)');
+          router.replace('/dashboard');
         }
       } catch (err) {
-        console.warn('[AuthLanding] Session check failed', err);
-      }
-
-      if (!cancelled) {
-        console.log('[AuthLanding] No session found, redirecting to /dashboard (will show login)');
+        console.warn('[AuthLanding] Session check failed:', err);
         router.replace('/dashboard');
       }
     }
 
     // Wait a bit for cookies to be committed, then check session
-    setTimeout(checkSession, 1000);
+    setTimeout(() => {
+      console.log('[AuthLanding] ===== STARTING SESSION CHECK =====');
+      checkSession();
+    }, 1000);
 
     return () => {
-      cancelled = true;
+      console.log('[AuthLanding] ===== PAGE UNMOUNTED =====');
     };
   }, [router]);
 
