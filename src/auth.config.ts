@@ -137,12 +137,14 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       callbacks: {
         async jwt({ token, user, account, profile }) {
           console.log('[JWT] callback triggered - user:', user?.id, 'token.sub:', token?.sub, 'account:', account?.provider);
+          console.log('[JWT] callback - token before:', { sub: token.sub, id: token.id, email: token.email });
           // On sign in, add user id to token
           if (user) {
             token.id = user.id;
-            console.log('[JWT] Added user.id to token:', token.id);
+            console.log('[JWT] callback - added user.id to token:', token.id);
           }
-          console.log('[JWT] returning token:', { id: token.id, sub: token.sub, email: token.email });
+          console.log('[JWT] callback - token after:', { sub: token.sub, id: token.id, email: token.email });
+          console.log('[JWT] callback - returning token');
           return token;
         },
         async signIn({ user, account, profile }) {
@@ -154,12 +156,15 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           return url.startsWith(baseUrl) ? url : baseUrl + '/dashboard';
         },
         async session({ session, token }) {
-          console.log('[Session] callback - token.id:', token?.id, 'token.sub:', token?.sub, 'session.user:', session?.user?.email);
+          console.log('[Session] callback called - token present:', !!token, 'token.sub:', token?.sub, 'token.id:', token?.id);
+          console.log('[Session] callback - session.user before:', session?.user);
           // Add user id from token to session
           if (session?.user && token?.id) {
             session.user.id = token.id as string;
+            console.log('[Session] callback - added user.id to session:', session.user.id);
           }
-          console.log('[Session] returning user:', session?.user?.id, session?.user?.email);
+          console.log('[Session] callback - session.user after:', session?.user);
+          console.log('[Session] callback - returning session with user:', session?.user?.email);
           return session;
         },
       },

@@ -113,6 +113,7 @@ const handler = async (req: Request, context: any) => {
     // of the response body so we can see whether a session object is present.
     try {
       if (path === '/api/auth/session' && response) {
+        console.log('[Route Handler] /api/auth/session - incoming cookies:', redactCookies(cookieHeader));
         const cloned = response.clone();
         const text = await cloned.text();
         let json: any = null;
@@ -128,6 +129,7 @@ const handler = async (req: Request, context: any) => {
           userEmailPresent: !!json?.user?.email,
           bodyLength: text?.length ?? 0,
         });
+        console.log('[Route Handler] /api/auth/session full response:', json);
       }
     } catch (err) {
       console.warn('[Route Handler] failed to read/parse session response body', err);
