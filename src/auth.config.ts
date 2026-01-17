@@ -209,7 +209,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           name: 'next-auth.session-token',
           options: {
             httpOnly: true,
-            sameSite: 'lax',
+            sameSite: 'none',
             path: '/',
             secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
             domain: process.env.NODE_ENV === 'production' ? '.web.app' : undefined,
