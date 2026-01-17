@@ -148,7 +148,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           return token;
         },
         async signIn({ user, account, profile }) {
-          console.log('[Callback][signIn] user:', user?.id, 'provider:', account?.provider, 'accountId:', account?.providerAccountId);
+          console.log('[Callback][signIn] called with user:', user?.id, 'email:', user?.email, 'account:', account?.provider);
           return true;
         },
         async redirect({ url, baseUrl }) {
@@ -209,7 +209,6 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
             sameSite: 'lax',
             path: '/',
             secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
-            domain: process.env.NODE_ENV === 'production' ? '.web.app' : undefined,
           },
         },
       },
