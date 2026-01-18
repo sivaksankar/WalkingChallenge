@@ -20,6 +20,16 @@ const handler = async (req: Request, context: any) => {
   console.log('[Route Handler] Host:', req.headers.get('host'));
   console.log('[Route Handler] Origin:', req.headers.get('origin'));
   console.log('[Route Handler] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+
+  // Extra diagnostics for signin POSTs to see if client expects JSON (which returns 200)
+  if (req.method === 'POST' && path.startsWith('/api/auth/signin')) {
+    console.log('[Route Handler] Signin POST headers:', {
+      accept: req.headers.get('accept'),
+      contentType: req.headers.get('content-type'),
+      userAgent: req.headers.get('user-agent'),
+      referer: req.headers.get('referer'),
+    });
+  }
   
   try {
     const authOptions = await getAuthOptions();
