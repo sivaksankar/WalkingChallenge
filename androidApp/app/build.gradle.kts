@@ -22,8 +22,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "WEB_BASE_URL", "\"https://nextjs-app-maiqzzrcja-uc.a.run.app/\"")
-        buildConfigField("String", "API_BASE_URL", "\"https://nextjs-app-maiqzzrcja-uc.a.run.app/\"")
+        buildConfigField("String", "WEB_BASE_URL", "\"https://walking-challenge-cd6dd.web.app/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://walking-challenge-cd6dd.web.app/\"")
     }
 
     buildTypes {

@@ -8,7 +8,7 @@ export default function GoogleSignInButton() {
     try {
       console.log('[GoogleSignInButton] ===== BUTTON CLICKED =====');
       console.log('[GoogleSignInButton] Starting Google sign-in...');
-      const result = await signIn('google', { callbackUrl: '/auth/commit' });
+      const result = await signIn('google'); // Remove custom callbackUrl to use default
       console.log('[GoogleSignInButton] signIn result:', result);
       console.log('[GoogleSignInButton] ===== SIGN-IN COMPLETE =====');
     } catch (error) {

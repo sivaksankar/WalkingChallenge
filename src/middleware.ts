@@ -11,13 +11,12 @@ export default withAuth({
       const hasToken = !!token;
       console.log('[Middleware] hasToken result:', hasToken);
       
-      // Always allow access for now - we'll handle protection client-side
-      // This is needed for mobile app redirects after OAuth
-      return true;
+      // Require authentication for dashboard routes
+      return hasToken;
     },
   },
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/login',
   },
 });
 

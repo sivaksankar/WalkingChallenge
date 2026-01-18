@@ -135,44 +135,47 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           },
         }),
       ],
-      // Prefer passing the client Firestore instance to the adapter when available.
-      adapter: adapterInstance,
+      // adapter: adapterInstance, // Temporarily disable adapter for testing
       callbacks: {
-        async jwt({ token, user, account, profile }) {
-          console.log('[JWT] callback triggered - user:', user?.id, 'token.sub:', token?.sub, 'account:', account?.provider);
-          console.log('[JWT] callback - token before:', { sub: token.sub, id: token.id, email: token.email });
-          // On sign in, add user id to token
-          if (user) {
-            token.id = user.id;
-            console.log('[JWT] callback - added user.id to token:', token.id);
-          }
-          console.log('[JWT] callback - token after:', { sub: token.sub, id: token.id, email: token.email });
-          console.log('[JWT] callback - returning token');
-          return token;
-        },
         async signIn({ user, account, profile }) {
           console.log('[Callback][signIn] called with user:', user?.id, 'email:', user?.email, 'account:', account?.provider);
           return true;
         },
         async redirect({ url, baseUrl }) {
           console.log('[Redirect] url:', url, 'baseUrl:', baseUrl);
-          return url.startsWith(baseUrl) ? url : baseUrl + '/dashboard';
+          // For mobile apps, use the custom redirect URI
+          if (url.includes('://') && !url.startsWith('http')) {
+            return url;
+          }
+          // For web authentication, always redirect to dashboard
+          return baseUrl + '/dashboard';
         },
         async session({ session, token }) {
-          console.log('[Session] callback called - token present:', !!token, 'token.sub:', token?.sub, 'token.id:', token?.id);
+          console.log('[Session] callback called - token present:', !!token, 'token.sub:', token?.sub);
           console.log('[Session] callback - session.user before:', session?.user);
-          // Add user id from token to session
-          if (session?.user && token?.id) {
-            session.user.id = token.id as string;
+          // For JWT strategy, add user id from token
+          if (session?.user && token?.sub) {
+            session.user.id = token.sub;
             console.log('[Session] callback - added user.id to session:', session.user.id);
           }
           console.log('[Session] callback - session.user after:', session?.user);
           console.log('[Session] callback - returning session with user:', session?.user?.email);
           return session;
         },
+        async jwt({ token, user }) {
+          console.log('[JWT] callback called - user present:', !!user, 'user.id:', user?.id);
+          console.log('[JWT] callback - token before:', { sub: token.sub, id: token.id });
+          // Add user id to JWT token
+          if (user?.id) {
+            token.id = user.id;
+            console.log('[JWT] callback - added id to token:', token.id);
+          }
+          console.log('[JWT] callback - token after:', { sub: token.sub, id: token.id });
+          return token;
+        },
       },
       session: {
-        strategy: 'jwt',
+        strategy: 'jwt', // Temporarily switch to JWT for testing
         maxAge: 30 * 24 * 60 * 60, // 30 days
       },
       pages: {
@@ -209,10 +212,10 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           name: 'next-auth.session-token',
           options: {
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'lax',
             path: '/',
             secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
-            domain: process.env.NODE_ENV === 'production' ? '.web.app' : undefined,
+            // Don't set domain - let browser handle it for Firebase Hosting + Cloud Run
           },
         },
       },

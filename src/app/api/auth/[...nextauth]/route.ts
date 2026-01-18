@@ -82,32 +82,71 @@ const handler = async (req: Request, context: any) => {
     }
 
     // If this was an OAuth callback (e.g. /api/auth/callback/google) then
-    // NextAuth typically returns a 302 to the callbackUrl. To avoid the
-    // cookie-commit race where the client immediately requests /api/auth/session
-    // before the browser attaches cookies from the redirect response, override
-    // the callback redirect to point to `/auth/commit` which will perform a
-    // short client-side delay then navigate to `/auth/landing`.
+    // NextAuth typically returns a 302 to the callbackUrl. With database strategy,
+    // we can redirect directly to /auth/landing since sessions are stored in the database.
+    // However, if a custom redirect_uri was provided (e.g., for mobile apps), respect that instead.
     if (path.startsWith('/api/auth/callback') && response?.status && String(response.status).startsWith('3')) {
       try {
-        const cookies = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
-        console.log('[Route Handler] Callback detected; overriding redirect to /auth/commit and preserving', cookies?.length ?? 0, 'Set-Cookie headers');
+        const originalLocation = response?.headers?.get && response.headers.get('location');
+        console.log('[Route Handler] Callback detected; original location:', originalLocation);
+        
+        // Check if the original redirect location is a custom scheme (like walkingchallenge://)
+        // This indicates a mobile app callback
+        const isCustomSchemeRedirect = originalLocation && (
+          originalLocation.startsWith('walkingchallenge://') || 
+          (originalLocation.includes('://') && !originalLocation.startsWith('http'))
+        );
+        
+        console.log('[Route Handler] Callback analysis:', {
+          originalLocation,
+          isCustomSchemeRedirect,
+          redirectUriParam,
+          authCode: url.searchParams.get('code')
+        });
+        
+        if (isCustomSchemeRedirect) {
+          console.log('[Route Handler] Mobile app callback detected; redirecting with authorization code');
+          
+          // For mobile apps, extract the authorization code from the callback and include it in the redirect
+          const authCode = url.searchParams.get('code');
+          let redirectUrl = originalLocation;
+          
+          if (authCode && redirectUrl) {
+            // Handle custom schemes that can't be parsed by URL constructor
+            if (redirectUrl.includes('://') && !redirectUrl.startsWith('http')) {
+              // For custom schemes like walkingchallenge://, append query param manually
+              const separator = redirectUrl.includes('?') ? '&' : '?';
+              redirectUrl = `${redirectUrl}${separator}code=${encodeURIComponent(authCode)}`;
+            } else {
+              // For regular URLs, use URL constructor
+              try {
+                const urlObj = new URL(redirectUrl);
+                urlObj.searchParams.set('code', authCode);
+                redirectUrl = urlObj.toString();
+              } catch (e) {
+                console.warn('[Route Handler] Failed to parse redirect URL:', redirectUrl, e);
+              }
+            }
+            console.log('[Route Handler] Added code to mobile redirect:', redirectUrl);
+          }
+          
+          return new Response('', { 
+            status: 302, 
+            headers: [['location', redirectUrl]] 
+          });
+        } else {
+          console.log('[Route Handler] Web callback detected; redirecting directly to /auth/landing');
+          
+          // Use NEXTAUTH_URL to determine the correct host for the redirect
+          const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+          const landingUrl = `${nextAuthUrl}/auth/landing`;
+          console.log('[Route Handler] Using landing URL:', landingUrl);
 
-        // Use NEXTAUTH_URL to determine the correct host for the redirect
-        const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-        const commitUrl = `${nextAuthUrl}/auth/commit`;
-        console.log('[Route Handler] Using commit URL:', commitUrl);
-
-        // Force the redirect to the same host where auth is handled so that
-        // cookies set on the callback response will be applicable to the
-        // following navigation. This prevents the browser from navigating
-        // to a different host where the cookies would be host-mismatched
-        // and therefore not sent.
-        const headers: Array<[string, string]> = [['location', commitUrl]];
-        if (cookies && cookies.length) {
-          cookies.forEach((c: string) => headers.push(['set-cookie', c]));
+          return new Response('', { 
+            status: 302, 
+            headers: [['location', landingUrl]] 
+          });
         }
-
-        return new Response('', { status: 302, headers });
       } catch (err) {
         console.warn('[Route Handler] failed to override callback redirect', err);
       }
