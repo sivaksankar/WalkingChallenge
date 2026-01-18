@@ -2,12 +2,9 @@
 import type { AuthOptions, DefaultSession, Session } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import GoogleProvider from 'next-auth/providers/google';
-import { FirestoreAdapter } from '@next-auth/firebase-adapter';
+import { AdminFirestoreAdapter } from '@/lib/firebase-admin-adapter';
 import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { Firestore } from 'firebase-admin/firestore';
-import { initializeApp as initializeClientApp, getApps as getClientApps } from 'firebase/app';
-import { getFirestore as getClientFirestore } from 'firebase/firestore';
-import { AdminFirestoreAdapter } from '@/lib/firebase-admin-adapter';
 
 // Extend session types
 declare module 'next-auth' {
@@ -53,71 +50,26 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
   console.log('[getAuthOptions] ===== GET AUTH OPTIONS START =====');
   console.log('[getAuthOptions] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
   console.log('[getAuthOptions] NODE_ENV:', process.env.NODE_ENV);
+  
   try {
     const googleClientId = getEnvVar('GOOGLE_CLIENT_ID');
     const googleClientSecret = getEnvVar('GOOGLE_CLIENT_SECRET');
     const nextAuthSecret = getEnvVar('NEXTAUTH_SECRET');
     
-    // Get Firestore instance
+    // Get Firestore instance and adapter
     const db = await getFirestoreInstance();
+    const adapterInstance = AdminFirestoreAdapter(db as any);
 
-    // Ensure the Firebase Client SDK is initialized (some adapters expect a client app)
-    let clientDb: any = null;
-    const clientConfig = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    };
+    // Determine if we're running in a secure context
+    const isProduction = process.env.NODE_ENV === 'production';
+    const nextAuthUrl = process.env.NEXTAUTH_URL || '';
+    const isSecure = isProduction || nextAuthUrl.startsWith('https');
 
-    // Debug logs: print which client config keys are present (avoid logging secrets)
-    console.log('getAuthOptions: clientConfig presence:', {
-      projectId: !!clientConfig.projectId,
-      apiKey: !!clientConfig.apiKey,
-      authDomain: !!clientConfig.authDomain,
+    console.log('[getAuthOptions] Configuration:', {
+      isProduction,
+      isSecure,
+      nextAuthUrl,
     });
-
-    try {
-      const hasRequired = clientConfig.projectId && clientConfig.apiKey;
-      if (hasRequired) {
-        const clientApp = getClientApps().length === 0 ? initializeClientApp(clientConfig as any) : undefined;
-        const appToUse = clientApp || (getClientApps()[0] as any);
-        if (appToUse) {
-          clientDb = getClientFirestore(appToUse as any);
-        }
-      }
-    } catch (initErr) {
-      console.warn('Could not initialize Firebase client SDK in getAuthOptions:', initErr);
-    }
-
-    console.log('getAuthOptions: clientDb set?', !!clientDb);
-
-    // Build adapter and log detailed errors if initialization fails
-    // Prefer using admin adapter (server-side) to avoid client permission errors
-    let adapterInstance: any = null;
-    try {
-      const adminDb = await getFirestoreInstance();
-      adapterInstance = AdminFirestoreAdapter(adminDb as any);
-    } catch (adapterErr) {
-      console.error('AdminFirestoreAdapter initialization error:', adapterErr);
-      console.error((adapterErr as any)?.stack);
-      // Fallback: try client adapter if admin adapter fails
-      try {
-        const hasClientConfig = !!clientConfig.projectId && !!clientConfig.apiKey;
-        if (!hasClientConfig) throw new Error('Missing client Firebase config for FirestoreAdapter fallback');
-        adapterInstance = FirestoreAdapter(clientConfig as any);
-      } catch (fallbackErr) {
-        console.error('FirestoreAdapter fallback initialization error:', fallbackErr);
-        throw fallbackErr;
-      }
-    }
-
-    // Log provider configuration (non-sensitive data only)
-    console.log('getAuthOptions: Using Google client id:', googleClientId);
-    console.log('getAuthOptions: NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
 
     return {
       providers: [
@@ -125,103 +77,148 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
           allowDangerousEmailAccountLinking: true,
-          checks: ['none'],
           authorization: {
             params: {
               prompt: 'consent',
               access_type: 'offline',
               response_type: 'code',
+              // Add scope for profile and email
+              scope: 'openid email profile',
             },
           },
         }),
       ],
-      // adapter: adapterInstance, // Temporarily disable adapter for testing
+      adapter: adapterInstance, // ✅ FIXED: Re-enabled adapter
       callbacks: {
         async signIn({ user, account, profile }) {
-          console.log('[Callback][signIn] called with user:', user?.id, 'email:', user?.email, 'account:', account?.provider);
+          console.log('[Callback][signIn] User:', user?.id, 'Email:', user?.email, 'Provider:', account?.provider);
           return true;
         },
         async redirect({ url, baseUrl }) {
-          console.log('[Redirect] url:', url, 'baseUrl:', baseUrl);
-          // For mobile apps, use the custom redirect URI
+          console.log('[Callback][redirect] URL:', url, 'BaseURL:', baseUrl);
+          
+          // Handle custom scheme redirects for mobile apps
           if (url.includes('://') && !url.startsWith('http')) {
+            console.log('[Callback][redirect] Mobile app custom scheme detected:', url);
             return url;
           }
-          // For web authentication, always redirect to dashboard
-          return baseUrl + '/dashboard';
-        },
-        async session({ session, token }) {
-          console.log('[Session] callback called - token present:', !!token, 'token.sub:', token?.sub);
-          console.log('[Session] callback - session.user before:', session?.user);
-          // For JWT strategy, add user id from token
-          if (session?.user && token?.sub) {
-            session.user.id = token.sub;
-            console.log('[Session] callback - added user.id to session:', session.user.id);
+          
+          // Handle relative URLs
+          if (url.startsWith('/')) {
+            return `${baseUrl}${url}`;
           }
-          console.log('[Session] callback - session.user after:', session?.user);
-          console.log('[Session] callback - returning session with user:', session?.user?.email);
+          
+          // Handle same-origin URLs
+          if (url.startsWith(baseUrl)) {
+            return url;
+          }
+          
+          // Default: redirect to dashboard
+          console.log('[Callback][redirect] Defaulting to dashboard');
+          return `${baseUrl}/dashboard`;
+        },
+        async session({ session, token, user }) {
+          console.log('[Callback][session] Token sub:', token?.sub, 'User ID:', user?.id);
+          
+          // For database strategy, user object is available
+          if (user) {
+            session.user.id = user.id;
+          }
+          // For JWT strategy, use token
+          else if (token?.sub) {
+            session.user.id = token.sub;
+          }
+          
+          console.log('[Callback][session] Final session user ID:', session.user.id);
           return session;
         },
-        async jwt({ token, user }) {
-          console.log('[JWT] callback called - user present:', !!user, 'user.id:', user?.id);
-          console.log('[JWT] callback - token before:', { sub: token.sub, id: token.id });
-          // Add user id to JWT token
-          if (user?.id) {
+        async jwt({ token, user, account }) {
+          console.log('[Callback][jwt] User:', user?.id, 'Token sub:', token.sub);
+          
+          // Add user id to token on sign in
+          if (user) {
             token.id = user.id;
-            console.log('[JWT] callback - added id to token:', token.id);
+            token.sub = user.id;
           }
-          console.log('[JWT] callback - token after:', { sub: token.sub, id: token.id });
+          
+          console.log('[Callback][jwt] Final token:', { sub: token.sub, id: token.id });
           return token;
         },
       },
       session: {
-        strategy: 'jwt', // Temporarily switch to JWT for testing
+        strategy: 'database', // ✅ FIXED: Use database strategy with adapter
         maxAge: 30 * 24 * 60 * 60, // 30 days
+        updateAge: 24 * 60 * 60, // 24 hours
       },
       pages: {
         signIn: '/auth/signin',
         error: '/auth/signin',
       },
       secret: nextAuthSecret,
-      // Custom logger and events to capture additional debug info for OAuth
-      // flows and token exchange errors.
       logger: {
-        log: (...args: any[]) => console.log('[next-auth]', ...args),
-        error: (...args: any[]) => console.error('[next-auth][error]', ...args),
-        warn: (...args: any[]) => console.warn('[next-auth][warn]', ...args),
+        error: (code, metadata) => {
+          console.error('[NextAuth][Error]', code, metadata);
+        },
+        warn: (code) => {
+          console.warn('[NextAuth][Warn]', code);
+        },
+        debug: (code, metadata) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[NextAuth][Debug]', code, metadata);
+          }
+        },
       },
       events: {
         async signIn({ user, account, profile, isNewUser }) {
-          console.log('[NextAuth event][signIn]', { user: user?.id, provider: account?.provider, isNewUser });
+          console.log('[NextAuth][Event][signIn]', {
+            userId: user?.id,
+            email: user?.email,
+            provider: account?.provider,
+            isNewUser,
+          });
         },
-        async signOut({ token }) {
-          console.log('[NextAuth event][signOut]', { token: token?.sub });
-        },
-        async error({ error }) {
-          console.error('[NextAuth event][error]', error);
+        async signOut({ session, token }) {
+          console.log('[NextAuth][Event][signOut]', {
+            userId: token?.sub || session?.user?.id,
+          });
         },
       },
-      debug: process.env.NODE_ENV === 'development',
-      // Trust proxy headers when behind Firebase Hosting/Cloud Run
+      // Allow enabling verbose NextAuth debugging via env var for production troubleshooting
+      debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
       trustHost: true,
-      // Use secure cookies in production and ensure cookies work across the OAuth
-      // redirect flow by using SameSite=None + Secure when running on HTTPS.
-      useSecureCookies: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
+      useSecureCookies: isSecure,
       cookies: {
         sessionToken: {
-          name: 'next-auth.session-token',
+          name: isSecure ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+          options: {
+            httpOnly: true,
+            sameSite: 'lax', // ✅ Changed from 'none' to 'lax' for better compatibility
+            path: '/',
+            secure: isSecure,
+          },
+        },
+        callbackUrl: {
+          name: isSecure ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
           options: {
             httpOnly: true,
             sameSite: 'lax',
             path: '/',
-            secure: !!(process.env.NODE_ENV === 'production' || (process.env.NEXTAUTH_URL || '').startsWith('https')),
-            // Don't set domain - let browser handle it for Firebase Hosting + Cloud Run
+            secure: isSecure,
+          },
+        },
+        csrfToken: {
+          name: isSecure ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
+          options: {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            secure: isSecure,
           },
         },
       },
     };
   } catch (error) {
-    console.error('Error in getAuthOptions:', error);
+    console.error('[getAuthOptions] Error:', error);
     throw error;
   }
 };

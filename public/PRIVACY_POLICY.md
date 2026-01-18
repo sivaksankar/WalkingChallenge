@@ -103,7 +103,7 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 If you have questions about this Privacy Policy or your data, contact us at:
 
 **Email:** support@walkingchallenge.app
-**Website:** https://nimble-basbousa-d20a87.netlify.app
+**Website:** https://walking-challenge-cd6dd.web.app
 
 ## Legal Compliance
 

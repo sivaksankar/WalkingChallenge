@@ -2,15 +2,27 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
+import { isMobile } from '@/lib/mobile-auth';
 
 export default function GoogleSignInButton() {
   const handleSignIn = async () => {
     try {
-      console.log('[GoogleSignInButton] ===== BUTTON CLICKED =====');
-      console.log('[GoogleSignInButton] Starting Google sign-in...');
-      const result = await signIn('google'); // Remove custom callbackUrl to use default
-      console.log('[GoogleSignInButton] signIn result:', result);
-      console.log('[GoogleSignInButton] ===== SIGN-IN COMPLETE =====');
+      console.log('[GoogleSignInButton] Starting sign-in...');
+      console.log('[GoogleSignInButton] Is mobile:', isMobile());
+      
+      if (isMobile()) {
+        // For mobile apps, use custom scheme callback
+        await signIn('google', { 
+          callbackUrl: 'walkingchallenge://auth/callback',
+          redirect: true,
+        });
+      } else {
+        // For web, use standard NextAuth flow
+        await signIn('google', { 
+          callbackUrl: '/dashboard',
+          redirect: true,
+        });
+      }
     } catch (error) {
       console.error('[GoogleSignInButton] Error:', error);
     }

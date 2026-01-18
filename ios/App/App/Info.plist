@@ -51,6 +51,15 @@
 	<string>Walking Challenge needs access to your step count data to track your progress in fitness challenges with friends.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Walking Challenge needs permission to update your health data.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>walkingchallenge</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

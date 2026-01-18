@@ -29,8 +29,16 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="nimble-basbousa-d20a87.netlify.app"
+                    android:host="walking-challenge-cd6dd.web.app"
                     android:pathPrefix="/" />
+            </intent-filter>
+
+            <!-- Mobile OAuth deep link for custom scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="walkingchallenge" />
             </intent-filter>
 
         </activity>

@@ -1,25 +1,28 @@
+// src/middleware.ts
 import { withAuth } from 'next-auth/middleware';
 
 export default withAuth({
   callbacks: {
     authorized: ({ token, req }) => {
-      console.log('[Middleware] ===== MIDDLEWARE CHECK =====');
-      console.log('[Middleware] path:', req.nextUrl.pathname);
-      console.log('[Middleware] token present:', !!token);
-      console.log('[Middleware] token data:', token ? { sub: token.sub, id: token.id } : 'null');
-      console.log('[Middleware] cookies:', req.cookies.getAll().map(c => `${c.name}=${c.value.substring(0, 10)}...`));
-      const hasToken = !!token;
-      console.log('[Middleware] hasToken result:', hasToken);
+      const path = req.nextUrl.pathname;
+      console.log('[Middleware] Checking path:', path);
+      console.log('[Middleware] Token present:', !!token);
+      console.log('[Middleware] Token sub:', token?.sub);
       
-      // Require authentication for dashboard routes
-      return hasToken;
+      // Allow access if token exists
+      return !!token;
     },
   },
   pages: {
-    signIn: '/login',
+    signIn: '/auth/signin', // ✅ FIXED: Corrected path to match actual sign-in page
   },
 });
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/challenges/:path*',
+    '/leaderboard/:path*',
+    '/profile/:path*',
+  ],
 };

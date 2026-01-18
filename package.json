@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "firebase:stage": "rm -rf functions/nextjs && mkdir -p functions/nextjs && cp -r .next/standalone/* functions/nextjs/ && cp -r .next/static functions/nextjs/.next/ && cp -r public functions/nextjs/",
+    "firebase:stage": "rm -rf functions/nextjs && mkdir -p functions/nextjs && cp -r .next/standalone/* functions/nextjs/ && mkdir -p functions/nextjs/.next && cp -r .next/* functions/nextjs/.next/ && cp -r public functions/nextjs/ && cp functions/fetch-patch.js functions/nextjs/fetch-patch.js",
     "build:mobile": "next build && npx cap sync",
     "ios": "npx cap open ios",
     "android": "npx cap open android",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/app": "^8.0.0",
+    "@capacitor/browser": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
