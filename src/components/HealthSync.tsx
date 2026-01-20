@@ -60,19 +60,27 @@ export function HealthSync() {
 
     try {
       const granted = await nativeHealthService.requestPermissions();
-      
+
       if (granted) {
         setHasPermission(true);
         setMessage('✅ Health permissions granted!');
-        
+
         // Load today's steps
         const steps = await nativeHealthService.getTodaySteps();
         setTodaySteps(steps);
       } else {
         setMessage('⚠️ Health permissions denied. Please enable in Settings.');
       }
-    } catch (error) {
-      setMessage('❌ Failed to request permissions');
+    } catch (error: any) {
+      console.error('[HealthSync] Permission error:', error);
+      const errorMsg = error?.message || error?.toString() || 'Unknown error';
+      if (errorMsg.includes('not available') || errorMsg.includes('not supported')) {
+        setMessage('❌ Health app not available on this device');
+      } else if (errorMsg.includes('denied') || errorMsg.includes('permission')) {
+        setMessage('⚠️ Health permissions denied. Please enable in Settings > Privacy > Health.');
+      } else {
+        setMessage(`❌ Error: ${errorMsg}`);
+      }
     } finally {
       setSyncing(false);
     }

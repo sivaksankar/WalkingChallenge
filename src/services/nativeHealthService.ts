@@ -123,16 +123,19 @@ export class NativeHealthService {
     }
 
     try {
+      console.log('[NativeHealthService] Requesting health permissions...');
       const dataTypes: HealthDataType[] = ['steps', 'distance'];
       const result = await Health.requestAuthorization({
         read: dataTypes,
         write: []
       });
-      
+      console.log('[NativeHealthService] Permission result:', result);
+
       return result.readAuthorized && result.readAuthorized.length > 0;
-    } catch (error) {
-      console.error('Error requesting health permissions:', error);
-      return false;
+    } catch (error: any) {
+      console.error('[NativeHealthService] Error requesting health permissions:', error);
+      // Re-throw with message for better error handling upstream
+      throw new Error(error?.message || 'Failed to request health permissions');
     }
   }
 

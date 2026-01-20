@@ -121,13 +121,18 @@ export function ChallengeList() {
                   const isJoined = (userId && participants.includes(userId)) || (userEmail && participants.includes(userEmail));
                   if (isJoined) {
                     return (
-                      <button
-                        type="button"
-                        disabled
-                        className="mt-4 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-gray-200 text-base font-medium text-gray-600 sm:text-sm"
-                      >
-                        Joined
-                      </button>
+                      <div className="mt-4 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/dashboard/challenges/${challenge.id}`)}
+                          className="flex-1 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                        >
+                          View Leaderboard
+                        </button>
+                        <span className="inline-flex items-center px-3 py-2 rounded-md bg-green-100 text-green-800 text-sm font-medium">
+                          Joined
+                        </span>
+                      </div>
                     );
                   }
 
