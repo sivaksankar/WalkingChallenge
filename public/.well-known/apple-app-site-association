@@ -1,0 +1,21 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "5WQNZ7HVT9.com.walkingchallenge.app",
+        "paths": [
+          "/api/auth/callback/*",
+          "/dashboard",
+          "/dashboard/*",
+          "/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "5WQNZ7HVT9.com.walkingchallenge.app"
+    ]
+  }
+}
