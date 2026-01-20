@@ -19,29 +19,37 @@ export function HealthSync() {
   useEffect(() => {
     // Check if running on native platform
     const checkNativePlatform = async () => {
+      // Force re-detection to ensure we have the latest info after page load
+      nativeHealthService.redetect();
+
       const native = nativeHealthService.isNativePlatform();
       const plat = nativeHealthService.getPlatform();
+
+      console.log('[HealthSync] Platform check:', { native, plat, userAgent: navigator?.userAgent });
+
       setIsNative(native);
       setPlatform(plat);
 
       if (native) {
         // Check if permissions are already granted
-        const permitted = await nativeHealthService.checkPermissions();
-        setHasPermission(permitted);
+        try {
+          const permitted = await nativeHealthService.checkPermissions();
+          setHasPermission(permitted);
 
-        if (permitted) {
-          // Load today's steps automatically
-          try {
+          if (permitted) {
+            // Load today's steps automatically
             const steps = await nativeHealthService.getTodaySteps();
             setTodaySteps(steps);
-          } catch (error) {
-            console.error('Error loading today steps:', error);
           }
+        } catch (error) {
+          console.error('Error checking permissions or loading steps:', error);
         }
       }
     };
 
-    checkNativePlatform();
+    // Delay slightly to ensure Capacitor bridge is fully loaded
+    const timer = setTimeout(checkNativePlatform, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const requestHealthPermissions = async () => {
@@ -139,15 +147,15 @@ export function HealthSync() {
       {isNative && (
         <div className="mb-6 p-4 border-2 border-green-200 rounded-lg bg-green-50">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">{platform === 'ios' ? '🍎' : '🤖'}</span>
-            <h3 className="font-semibold">{platform === 'ios' ? 'Apple Health' : 'Samsung Health'}</h3>
+            <span className="text-2xl">{platform === 'ios' ? '🍎' : '💚'}</span>
+            <h3 className="font-semibold">{platform === 'ios' ? 'Apple Health' : 'Health Connect'}</h3>
             <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Automatic</span>
           </div>
 
           {!hasPermission ? (
             <div className="space-y-3">
               <p className="text-sm text-gray-700">
-                Grant permission to automatically sync steps from {platform === 'ios' ? 'Apple Health' : 'Samsung Health'}
+                Grant permission to automatically sync steps from {platform === 'ios' ? 'Apple Health' : 'Health Connect (Google)'}
               </p>
               <Button
                 onClick={requestHealthPermissions}
@@ -239,7 +247,7 @@ export function HealthSync() {
             <span className="text-2xl">📱</span>
             <div>
               <p className="font-semibold text-gray-800 mb-2">
-                {platform === 'ios' ? '🍎 Apple Health' : platform === 'android' ? '🤖 Samsung Health' : '📲 Health App'} Integration
+                {platform === 'ios' ? '🍎 Apple Health' : platform === 'android' ? '💚 Health Connect' : '📲 Health App'} Integration
               </p>
               <p className="text-sm text-gray-700 mb-3">
                 Automatic health app sync requires a native mobile app. This is a web app running in your browser.

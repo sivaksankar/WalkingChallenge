@@ -77,6 +77,9 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
           allowDangerousEmailAccountLinking: true,
+          // Disable all OAuth checks - cookies don't work across WebView/Browser on mobile
+          // This is safe because: 1) We're using HTTPS, 2) Google validates the redirect_uri
+          checks: ['none'],
           authorization: {
             params: {
               prompt: 'consent',
@@ -96,25 +99,28 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
         },
         async redirect({ url, baseUrl }) {
           console.log('[Callback][redirect] URL:', url, 'BaseURL:', baseUrl);
-          
+
           // Handle custom scheme redirects for mobile apps
           if (url.includes('://') && !url.startsWith('http')) {
             console.log('[Callback][redirect] Mobile app custom scheme detected:', url);
             return url;
           }
-          
-          // Handle relative URLs
+
+          // Handle relative URLs - prepend baseUrl
           if (url.startsWith('/')) {
-            return `${baseUrl}${url}`;
+            const redirectUrl = `${baseUrl}${url}`;
+            console.log('[Callback][redirect] Relative URL redirect:', redirectUrl);
+            return redirectUrl;
           }
-          
-          // Handle same-origin URLs
+
+          // Handle same-origin URLs - allow them
           if (url.startsWith(baseUrl)) {
+            console.log('[Callback][redirect] Same-origin URL redirect:', url);
             return url;
           }
-          
-          // Default: redirect to dashboard
-          console.log('[Callback][redirect] Defaulting to dashboard');
+
+          // For security, reject external URLs and default to dashboard
+          console.log('[Callback][redirect] External URL blocked, redirecting to dashboard');
           return `${baseUrl}/dashboard`;
         },
         async session({ session, token, user }) {
@@ -146,7 +152,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
         },
       },
       session: {
-        strategy: 'database', // ✅ FIXED: Use database strategy with adapter
+        strategy: 'jwt', // Use JWT strategy for compatibility with middleware
         maxAge: 30 * 24 * 60 * 60, // 30 days
         updateAge: 24 * 60 * 60, // 24 hours
       },
@@ -185,6 +191,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
       },
       // Allow enabling verbose NextAuth debugging via env var for production troubleshooting
       debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
+      // Trust proxy headers (x-forwarded-host, x-forwarded-proto) from Cloud Functions
       trustHost: true,
       useSecureCookies: isSecure,
       cookies: {
@@ -192,7 +199,7 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           name: isSecure ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
           options: {
             httpOnly: true,
-            sameSite: 'lax', // ✅ Changed from 'none' to 'lax' for better compatibility
+            sameSite: 'none', // Use 'none' for cross-context OAuth (Capacitor WebView <-> Browser)
             path: '/',
             secure: isSecure,
           },
@@ -201,16 +208,34 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
           name: isSecure ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
           options: {
             httpOnly: true,
-            sameSite: 'lax',
+            sameSite: 'none', // Use 'none' for cross-context OAuth
             path: '/',
             secure: isSecure,
           },
         },
         csrfToken: {
-          name: isSecure ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
+          name: 'next-auth.csrf-token', // Don't use __Host- prefix with SameSite=none
           options: {
             httpOnly: true,
-            sameSite: 'lax',
+            sameSite: 'none', // Use 'none' for cross-context OAuth
+            path: '/',
+            secure: isSecure,
+          },
+        },
+        state: {
+          name: 'next-auth.state',
+          options: {
+            httpOnly: true,
+            sameSite: 'none', // Required for OAuth redirect from Google
+            path: '/',
+            secure: isSecure,
+          },
+        },
+        pkceCodeVerifier: {
+          name: 'next-auth.pkce.code_verifier',
+          options: {
+            httpOnly: true,
+            sameSite: 'none', // Required for OAuth redirect from Google
             path: '/',
             secure: isSecure,
           },

@@ -9,25 +9,107 @@ export interface HealthData {
   date: string;
 }
 
+/**
+ * Detect if running in a native Capacitor app.
+ * When loading from a remote server URL, we need to check for the native bridge differently.
+ */
+function detectNativePlatform(): boolean {
+  // First try the standard Capacitor check
+  if (Capacitor.isNativePlatform()) {
+    return true;
+  }
+
+  // If loading from remote server, check for Capacitor bridge in window
+  if (typeof window !== 'undefined') {
+    // Check for Capacitor native bridge
+    const win = window as any;
+    if (win.Capacitor?.isNativePlatform?.()) {
+      return true;
+    }
+    // Check for Android WebView
+    if (win.AndroidBridge || win.Capacitor?.Plugins?.App) {
+      return true;
+    }
+    // Check for iOS WebView
+    if (win.webkit?.messageHandlers?.Capacitor) {
+      return true;
+    }
+    // Check user agent for Android WebView
+    const ua = navigator.userAgent || '';
+    if (ua.includes('wv') || ua.includes('WebView')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Detect the platform (ios, android, or web)
+ */
+function detectPlatform(): 'ios' | 'android' | 'web' {
+  // First try the standard Capacitor check
+  const platform = Capacitor.getPlatform();
+  if (platform === 'ios' || platform === 'android') {
+    return platform;
+  }
+
+  // If loading from remote server, detect from user agent
+  if (typeof window !== 'undefined') {
+    const ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) {
+      return 'android';
+    }
+    if (/iPad|iPhone|iPod/.test(ua)) {
+      return 'ios';
+    }
+  }
+
+  return 'web';
+}
+
 export class NativeHealthService {
-  private isNative: boolean;
+  private _isNative: boolean | null = null;
+  private _platform: 'ios' | 'android' | 'web' | null = null;
 
   constructor() {
-    this.isNative = Capacitor.isNativePlatform();
+    // Don't detect in constructor - wait until client-side
+  }
+
+  /**
+   * Initialize detection (called lazily on first access)
+   */
+  private ensureDetected(): void {
+    if (this._isNative === null) {
+      this._isNative = detectNativePlatform();
+      this._platform = detectPlatform();
+      console.log('[NativeHealthService] Platform detection:', { isNative: this._isNative, platform: this._platform });
+    }
   }
 
   /**
    * Check if running on a native platform (iOS or Android)
    */
   isNativePlatform(): boolean {
-    return this.isNative;
+    this.ensureDetected();
+    return this._isNative!;
   }
 
   /**
    * Get the current platform name
    */
   getPlatform(): 'ios' | 'android' | 'web' {
-    return Capacitor.getPlatform() as 'ios' | 'android' | 'web';
+    this.ensureDetected();
+    return this._platform!;
+  }
+
+  /**
+   * Force re-detection of platform (useful after page load)
+   */
+  redetect(): void {
+    this._isNative = null;
+    this._platform = null;
+    this.ensureDetected();
   }
 
   /**
@@ -36,7 +118,7 @@ export class NativeHealthService {
    * Android: Health Connect permissions
    */
   async requestPermissions(): Promise<boolean> {
-    if (!this.isNative) {
+    if (!this.isNativePlatform()) {
       throw new Error('Health permissions can only be requested on native platforms');
     }
 
@@ -58,7 +140,7 @@ export class NativeHealthService {
    * Check if health permissions are granted
    */
   async checkPermissions(): Promise<boolean> {
-    if (!this.isNative) {
+    if (!this.isNativePlatform()) {
       return false;
     }
 
@@ -77,7 +159,7 @@ export class NativeHealthService {
    * Get step count for a specific date range
    */
   async getSteps(startDate: Date, endDate: Date): Promise<number> {
-    if (!this.isNative) {
+    if (!this.isNativePlatform()) {
       throw new Error('Health data can only be accessed on native platforms');
     }
 
@@ -111,7 +193,7 @@ export class NativeHealthService {
    * Get health data for the last N days
    */
   async getRecentHealthData(days: number = 7): Promise<HealthData[]> {
-    if (!this.isNative) {
+    if (!this.isNativePlatform()) {
       throw new Error('Health data can only be accessed on native platforms');
     }
 
@@ -144,7 +226,7 @@ export class NativeHealthService {
    * Sync health data with the backend API
    */
   async syncWithBackend(userId: string): Promise<{ success: boolean; synced: number; message?: string }> {
-    if (!this.isNative) {
+    if (!this.isNativePlatform()) {
       return {
         success: false,
         synced: 0,

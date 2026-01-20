@@ -32,21 +32,28 @@ export async function POST(req: Request) {
     const userRef = adminDb.collection('users').doc(userId);
 
     // Add user to challenge participants and add challenge to user's challenges
+    // IMPORTANT: Firestore transactions require ALL reads before ANY writes
     await adminDb.runTransaction(async (tx: any) => {
+      // Step 1: Do ALL reads first
       const chSnap = await tx.get(challengeRef);
+      const userSnap = await tx.get(userRef);
+
+      // Step 2: Validate after reads
       if (!chSnap.exists) throw new Error('Challenge not found');
+
+      // Step 3: Prepare data
       const participants = chSnap.data().participants || [];
+      const userChallenges = userSnap.exists ? (userSnap.data().challenges || []) : [];
+
+      // Step 4: Do ALL writes after reads
       if (!participants.includes(userId)) {
         tx.update(challengeRef, { participants: [...participants, userId] });
       }
 
-      const userSnap = await tx.get(userRef);
-      const userChallenges = userSnap.exists ? (userSnap.data().challenges || []) : [];
       if (!userChallenges.includes(challengeId)) {
         if (userSnap.exists) {
           tx.update(userRef, { challenges: [...userChallenges, challengeId] });
         } else {
-          // If user doc doesn't exist, create a minimal doc with challenges
           tx.set(userRef, { challenges: [challengeId], createdAt: new Date() });
         }
       }

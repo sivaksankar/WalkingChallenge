@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   appName: 'Walking Challenge',
   webDir: 'out',
   server: {
-    url: 'https://walking-challenge-cd6dd.web.app',
+    url: 'https://nextjs-app-409798850238.us-central1.run.app',
     cleartext: false,
     androidScheme: 'https',
   },
