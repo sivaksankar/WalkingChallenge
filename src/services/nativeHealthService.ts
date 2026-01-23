@@ -113,6 +113,24 @@ export class NativeHealthService {
   }
 
   /**
+   * Check if health services are available on this device
+   */
+  async isHealthAvailable(): Promise<boolean> {
+    if (!this.isNativePlatform()) {
+      return false;
+    }
+
+    try {
+      const result = await Health.isAvailable();
+      console.log('[NativeHealthService] Health availability:', result);
+      return result.available;
+    } catch (error) {
+      console.error('[NativeHealthService] Error checking health availability:', error);
+      return false;
+    }
+  }
+
+  /**
    * Request permissions to access health data
    * iOS: HealthKit permissions
    * Android: Health Connect permissions
@@ -123,6 +141,20 @@ export class NativeHealthService {
     }
 
     try {
+      // First check if health services are available
+      console.log('[NativeHealthService] Checking health availability...');
+      const available = await this.isHealthAvailable();
+      console.log('[NativeHealthService] Health available:', available);
+
+      if (!available) {
+        const platform = this.getPlatform();
+        if (platform === 'ios') {
+          throw new Error('HealthKit is not available on this device. Please ensure you have the Health app installed.');
+        } else {
+          throw new Error('Health Connect is not available. Please install Health Connect from the Play Store.');
+        }
+      }
+
       console.log('[NativeHealthService] Requesting health permissions...');
       const dataTypes: HealthDataType[] = ['steps', 'distance'];
       const result = await Health.requestAuthorization({
@@ -131,11 +163,24 @@ export class NativeHealthService {
       });
       console.log('[NativeHealthService] Permission result:', result);
 
+      // Check if permissions were granted or denied
+      if (result.readDenied && result.readDenied.length > 0) {
+        console.log('[NativeHealthService] Some permissions were denied:', result.readDenied);
+      }
+
       return result.readAuthorized && result.readAuthorized.length > 0;
     } catch (error: any) {
       console.error('[NativeHealthService] Error requesting health permissions:', error);
-      // Re-throw with message for better error handling upstream
-      throw new Error(error?.message || 'Failed to request health permissions');
+      // Provide more specific error messages
+      const errorMsg = error?.message || error?.toString() || 'Unknown error';
+
+      if (errorMsg.includes('not available') || errorMsg.includes('not supported')) {
+        throw new Error('Health services are not available on this device');
+      } else if (errorMsg.includes('denied') || errorMsg.includes('permission')) {
+        throw new Error('Health permissions were denied. Please enable in Settings > Privacy > Health.');
+      } else {
+        throw new Error(errorMsg);
+      }
     }
   }
 

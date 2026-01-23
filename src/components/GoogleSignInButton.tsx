@@ -9,20 +9,14 @@ export default function GoogleSignInButton() {
     try {
       console.log('[GoogleSignInButton] Starting sign-in...');
       console.log('[GoogleSignInButton] Is mobile:', isMobile());
-      
-      if (isMobile()) {
-        // For mobile apps, use custom scheme callback
-        await signIn('google', { 
-          callbackUrl: 'walkingchallenge://auth/callback',
-          redirect: true,
-        });
-      } else {
-        // For web, use standard NextAuth flow
-        await signIn('google', { 
-          callbackUrl: '/dashboard',
-          redirect: true,
-        });
-      }
+
+      // Use standard NextAuth flow for both web and mobile
+      // With allowNavigation configured in capacitor.config.ts,
+      // Google OAuth will stay within the WebView instead of opening Safari
+      await signIn('google', {
+        callbackUrl: '/dashboard',
+        redirect: true,
+      });
     } catch (error) {
       console.error('[GoogleSignInButton] Error:', error);
     }
