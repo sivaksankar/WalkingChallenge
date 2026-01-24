@@ -108,6 +108,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
 
           // Handle relative URLs - prepend baseUrl
           if (url.startsWith('/')) {
+            // For /dashboard callback, redirect to landing page first
+            // This allows mobile browser to redirect back to native app
+            if (url === '/dashboard' || url.startsWith('/dashboard')) {
+              const redirectUrl = `${baseUrl}/auth/landing`;
+              console.log('[Callback][redirect] Dashboard redirect via landing page:', redirectUrl);
+              return redirectUrl;
+            }
             const redirectUrl = `${baseUrl}${url}`;
             console.log('[Callback][redirect] Relative URL redirect:', redirectUrl);
             return redirectUrl;
@@ -115,13 +122,19 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
 
           // Handle same-origin URLs - allow them
           if (url.startsWith(baseUrl)) {
+            // Intercept dashboard redirects to go through landing page
+            if (url.includes('/dashboard')) {
+              const redirectUrl = `${baseUrl}/auth/landing`;
+              console.log('[Callback][redirect] Dashboard redirect via landing page:', redirectUrl);
+              return redirectUrl;
+            }
             console.log('[Callback][redirect] Same-origin URL redirect:', url);
             return url;
           }
 
-          // For security, reject external URLs and default to dashboard
-          console.log('[Callback][redirect] External URL blocked, redirecting to dashboard');
-          return `${baseUrl}/dashboard`;
+          // For security, reject external URLs and default to landing page
+          console.log('[Callback][redirect] External URL blocked, redirecting to landing');
+          return `${baseUrl}/auth/landing`;
         },
         async session({ session, token, user }) {
           console.log('[Callback][session] Token sub:', token?.sub, 'User ID:', user?.id);
