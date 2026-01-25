@@ -128,6 +128,13 @@ export const getAuthOptions = async (): Promise<AuthOptions> => {
               console.log('[Callback][redirect] Dashboard redirect via landing page:', redirectUrl);
               return redirectUrl;
             }
+            // If URL is just the base URL (root), redirect to landing page
+            // This happens after OAuth callback when callbackUrl is the root
+            if (url === baseUrl || url === baseUrl + '/') {
+              const redirectUrl = `${baseUrl}/auth/landing`;
+              console.log('[Callback][redirect] Root URL redirect via landing page:', redirectUrl);
+              return redirectUrl;
+            }
             console.log('[Callback][redirect] Same-origin URL redirect:', url);
             return url;
           }
