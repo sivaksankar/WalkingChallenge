@@ -23,7 +23,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep link for OAuth callback to return control to the app WebView -->
+            <!-- Deep link for returning to app after OAuth (not for OAuth callback itself) -->
+            <!-- Only intercept /auth/landing path, NOT /api/auth/callback -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -31,7 +32,18 @@
                 <data
                     android:scheme="https"
                     android:host="nextjs-app-409798850238.us-central1.run.app"
-                    android:pathPrefix="/" />
+                    android:pathPrefix="/auth/landing" />
+            </intent-filter>
+
+            <!-- Deep link for dashboard -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="nextjs-app-409798850238.us-central1.run.app"
+                    android:pathPrefix="/dashboard" />
             </intent-filter>
 
             <!-- Mobile OAuth deep link for custom scheme -->

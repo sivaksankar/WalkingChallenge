@@ -5,10 +5,10 @@
       {
         "appID": "5WQNZ7HVT9.com.walkingchallenge.app",
         "paths": [
-          "/api/auth/callback/*",
+          "/auth/landing",
           "/dashboard",
           "/dashboard/*",
-          "/*"
+          "NOT /api/*"
         ]
       }
     ]
