@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <application
+        android:name=".WalkingChallengeApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
@@ -14,31 +17,33 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            
-            <!-- ✅ FIXED: Deep link for OAuth callback -->
+
+            <!-- Deep link for OAuth callback to return control to the app WebView -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="walking-challenge-cd6dd.web.app"
-                    android:pathPrefix="/api/auth/callback" />
+                    android:host="nextjs-app-409798850238.us-central1.run.app"
+                    android:pathPrefix="/" />
             </intent-filter>
-            
-            <!-- ✅ ADDED: Custom scheme for OAuth -->
+
+            <!-- Mobile OAuth deep link for custom scheme -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="walkingchallenge" />
             </intent-filter>
+
         </activity>
-        
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -49,8 +54,9 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
-    
+
     <!-- Permissions -->
+
     <uses-permission android:name="android.permission.INTERNET" />
     
     <!-- Health Connect permissions -->

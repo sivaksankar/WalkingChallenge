@@ -5,36 +5,24 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "functions": {
+  "functions": [{
     "source": "functions",
-    "runtime": "nodejs20",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "package-lock.json"
-    ],
-    "predeploy": [
-      "npm --prefix functions install",
-      "npm --prefix functions run build"
-    ]
-  },
+    "codebase": "default",
+    "runtime": "nodejs20"
+  }],
   "hosting": {
-    "public": "public",
+    "public": "out",
+    "rewrites": [{
+      "source": "**",
+      "run": {
+        "serviceId": "nextjs-app",
+        "region": "us-central1"
+      }
+    }],
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "run": {
-          "serviceId": "nextjs-app",
-          "region": "us-central1"
-        }
-      }
     ]
   }
 }

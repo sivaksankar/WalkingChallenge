@@ -1,3 +1,6 @@
+// NOTE: This intermediate commit route may no longer be needed after OAuth fixes
+// It was originally added to handle cookie commitment issues
+// Consider removing if OAuth flow works directly after callback
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 

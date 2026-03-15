@@ -27,21 +27,26 @@ export default function SignInPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       console.log('[SignInPage] Starting Google sign-in...');
       console.log('[SignInPage] Callback URL:', callbackUrl);
-      
-      // ✅ FIXED: Simplified sign-in call
-      await signIn('google', { 
+
+      // Sign in with Google and redirect directly to callback URL
+      // NextAuth will handle the OAuth flow and redirect automatically
+      const result = await signIn('google', {
         callbackUrl,
         redirect: true,
       });
-      
-      // If we reach here without redirect, there was an error
-      console.log('[SignInPage] Sign-in completed without redirect');
-      
+
+      // If we reach here, check for errors
+      if (result?.error) {
+        console.error('[SignInPage] Sign-in error:', result.error);
+        setError(result.error);
+        setIsLoading(false);
+      }
+
     } catch (err) {
-      console.error('[SignInPage] Sign-in error:', err);
+      console.error('[SignInPage] Sign-in exception:', err);
       setError(err instanceof Error ? err.message : 'An error occurred during sign-in');
       setIsLoading(false);
     }

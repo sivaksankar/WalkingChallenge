@@ -5,6 +5,7 @@ import { spawn, ChildProcess } from "child_process";
 import fs from "fs";
 
 // Firebase Functions v2 automatically loads .env files
+// Updated 2026-01-19: Fixed NEXTAUTH_URL_INTERNAL handling
 console.log("Environment variables loaded by Firebase Functions v2");
 console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL ? "Set" : "Not set");
 console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Set" : "Not set");
@@ -23,9 +24,6 @@ async function startNextServer() {
 
   serverStartPromise = new Promise<void>((resolve, reject) => {
     try {
-      // Ensure no stale internal URL overrides leak through
-      delete process.env.NEXTAUTH_URL_INTERNAL;
-
       const env: Record<string, string | undefined> = {
         ...process.env,
         NODE_ENV: "production",
@@ -34,8 +32,8 @@ async function startNextServer() {
         // Force public NextAuth URL to avoid localhost redirects
         NEXTAUTH_URL: process.env.NEXTAUTH_URL || "https://walking-challenge-cd6dd.web.app",
         // Provide an internal URL for NextAuth to use for server-side internal fetches
-          NEXTAUTH_URL_INTERNAL: `http://${hostname}:${port}`,
-          NEXT_INTERNAL_PORT: String(port),
+        NEXTAUTH_URL_INTERNAL: process.env.NEXTAUTH_URL_INTERNAL || `http://${hostname}:${port}`,
+        NEXT_INTERNAL_PORT: String(port),
         FIREBASE_ADMIN_PROJECT_ID: process.env.ADMIN_PROJECT_ID,
         FIREBASE_ADMIN_CLIENT_EMAIL: process.env.ADMIN_CLIENT_EMAIL,
         FIREBASE_ADMIN_PRIVATE_KEY_B64: process.env.ADMIN_PRIVATE_KEY_B64,
@@ -119,24 +117,29 @@ export const nextServer = onRequest(
 
       // Prepare headers for proxy and log them for debugging
       const headers = { ...(req.headers as Record<string, string | string[] | undefined>) } as Record<string, any>;
+
       try {
         const publicUrl = process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL) : null;
         const publicHost = publicUrl ? publicUrl.host : undefined;
+        const internalPort = process.env.NEXT_INTERNAL_PORT || '8081';
+
         if (publicHost) {
-          // Set the Host header to the internal Next.js server so internal fetches
-          // from Next.js target the local server directly (avoids proxy loops).
-          headers.host = `127.0.0.1:${process.env.NEXT_INTERNAL_PORT || '8081'}`;
-          // Preserve the public host in x-forwarded-host so Next.js can construct
-          // absolute URLs using the public origin when needed.
+          // Set host to localhost for the proxy connection to Next.js
+          // This prevents Next.js from trying to fetch from itself via the public URL
+          headers['host'] = `127.0.0.1:${internalPort}`;
+
+          // Set x-forwarded-* headers so NextAuth knows the actual public URL
+          // NextAuth uses these to construct correct redirect URIs and set cookies
           headers['x-forwarded-host'] = publicHost;
           headers['x-forwarded-proto'] = publicUrl.protocol.replace(':', '');
           headers['x-forwarded-port'] = publicUrl.port || (publicUrl.protocol === 'https:' ? '443' : '80');
         } else {
+          headers['host'] = `127.0.0.1:${internalPort}`;
           headers['x-forwarded-proto'] = (req.headers['x-forwarded-proto'] as string) || 'https';
           headers['x-forwarded-port'] = (req.headers['x-forwarded-port'] as string) || '443';
         }
       } catch (e) {
-        // ignore
+        console.error('[Proxy] Error setting forwarded headers:', e);
       }
 
       console.log('Proxying request', { originalHost: req.headers.host, proxiedHost: headers.host, 'x-forwarded-host': headers['x-forwarded-host'] });

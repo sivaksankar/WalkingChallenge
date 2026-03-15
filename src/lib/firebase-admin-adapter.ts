@@ -23,9 +23,17 @@ export function AdminFirestoreAdapter(db: Firestore) {
 
   return {
     async createUser(newUser: any) {
-      const ref = await usersRef.add({ ...newUser });
-      const snap = await ref.get();
-      return { id: ref.id, ...snap.data() } as any;
+      try {
+        console.log('[Adapter][createUser] Creating user:', newUser?.email);
+        const ref = await usersRef.add({ ...newUser });
+        const snap = await ref.get();
+        const user = { id: ref.id, ...snap.data() };
+        console.log('[Adapter][createUser] User created:', user.id);
+        return user as any;
+      } catch (error) {
+        console.error('[Adapter][createUser] Error:', error);
+        throw error;
+      }
     },
 
     async getUser(id: string) {
@@ -75,9 +83,17 @@ export function AdminFirestoreAdapter(db: Firestore) {
     },
 
     async linkAccount(account: any) {
-      const ref = await accountsRef.add(account);
-      const snap = await ref.get();
-      return { id: ref.id, ...snap.data() } as any;
+      try {
+        console.log('[Adapter][linkAccount] Linking account:', account?.provider, 'for user:', account?.userId);
+        const ref = await accountsRef.add(account);
+        const snap = await ref.get();
+        const linkedAccount = { id: ref.id, ...snap.data() };
+        console.log('[Adapter][linkAccount] Account linked:', linkedAccount.id);
+        return linkedAccount as any;
+      } catch (error) {
+        console.error('[Adapter][linkAccount] Error:', error);
+        throw error;
+      }
     },
 
     async unlinkAccount({ provider, providerAccountId }: any) {

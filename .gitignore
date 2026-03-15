@@ -51,6 +51,18 @@ tablet-screenshots-generator.html
 # Android IDE
 android/.idea/
 
-# Xcode workspace
+# Android build output
+androidApp/app/build/
+android/app/build/
+android/build/
+*.apk
+*.aab
+
+# Firebase hosting cache
+.firebase/
+
+# Xcode workspace & user state
 ios/App/App.xcodeproj/project.xcworkspace/
+*.xcuserstate
+xcuserdata/
 local
