@@ -13,6 +13,8 @@ final class AuthViewModel: ObservableObject {
     @Published var isBusy: Bool = false
     @Published var errorMessage: String?
     @Published var requiresHealthPermission: Bool = false
+    @Published private(set) var isHealthConnected: Bool = false
+    @Published private(set) var recentSteps: [DailyStep] = []
 
     private let authService: AuthService
     private let sessionStore: SessionStore
@@ -36,6 +38,10 @@ final class AuthViewModel: ObservableObject {
     func loadSession() {
         if let session = sessionStore.currentSession {
             phase = .signedIn(session)
+            isHealthConnected = UserDefaults.standard.bool(forKey: "healthConnected")
+            if isHealthConnected {
+                Task { recentSteps = await healthManager.fetchRecentSteps() }
+            }
         } else {
             phase = .signedOut
         }
@@ -67,6 +73,8 @@ final class AuthViewModel: ObservableObject {
 
     func signOut() {
         sessionStore.clear()
+        UserDefaults.standard.removeObject(forKey: "healthConnected")
+        isHealthConnected = false
         phase = .signedOut
     }
 
@@ -84,8 +92,16 @@ final class AuthViewModel: ObservableObject {
                     throw AppleHealthManager.HealthError.notAvailable
                 }
                 try await healthManager.requestAuthorization()
-                try await healthManager.syncLatestSteps(session: session)
+                UserDefaults.standard.set(true, forKey: "healthConnected")
+                isHealthConnected = true
                 requiresHealthPermission = false
+                // Sync to server and refresh chart data in the background
+                Task {
+                    async let sync: () = { try? await healthManager.syncLatestSteps(session: session) }()
+                    async let steps = healthManager.fetchRecentSteps()
+                    _ = await sync
+                    recentSteps = await steps
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }

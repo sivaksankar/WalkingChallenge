@@ -50,9 +50,12 @@ struct RootView: View {
                 authViewModel.signIn()
             }
         case .signedIn(let session):
-            DashboardView(session: session) {
-                authViewModel.signOut()
-            }
+            DashboardView(
+                session: session,
+                isHealthConnected: authViewModel.isHealthConnected,
+                recentSteps: authViewModel.recentSteps,
+                onSignOut: { authViewModel.signOut() }
+            )
         }
     }
 }

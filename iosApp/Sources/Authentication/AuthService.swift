@@ -86,22 +86,69 @@ final class AuthService: NSObject {
         guard let http = response as? HTTPURLResponse else {
             throw AuthError.serverError("Invalid server response")
         }
+        let rawJSON = String(data: data, encoding: .utf8) ?? "(binary)"
+        print("[AuthService] Exchange response status: \(http.statusCode)")
+        print("[AuthService] Exchange response body: \(rawJSON)")
         guard (200..<300).contains(http.statusCode) else {
-            let message = String(data: data, encoding: .utf8) ?? "Unknown error"
-            throw AuthError.serverError(message)
+            throw AuthError.serverError(rawJSON)
         }
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(SessionPayload.self, from: data)
+        return try Self.parseSessionPayload(from: data)
     }
 
     private func authorizationURL() -> URL {
         var components = URLComponents(url: configuration.webBaseURL, resolvingAgainstBaseURL: false)!
-        components.path = "/api/auth/signin"
+        // Use custom mobile OAuth endpoint that redirects directly to Google
+        // with our custom redirect_uri for ASWebAuthenticationSession
+        components.path = "/api/mobile/auth/google"
         components.queryItems = [
             URLQueryItem(name: "redirect_uri", value: configuration.redirectURL.absoluteString)
         ]
         return components.url!
+    }
+
+    // Manual parsing using JSONSerialization to avoid NSException from type mismatches.
+    // JSONDecoder uses JSONSerialization internally and can throw an ObjC exception
+    // (not a Swift error) if it encounters a number where it expects a string.
+    private static func parseSessionPayload(from data: Data) throws -> SessionPayload {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw AuthError.serverError("Invalid JSON response")
+        }
+        guard let tokensDict = root["tokens"] as? [String: Any] else {
+            throw AuthError.serverError("Missing tokens in response")
+        }
+        guard let profileDict = root["profile"] as? [String: Any] else {
+            throw AuthError.serverError("Missing profile in response")
+        }
+
+        // Coerce token fields — convert any number to string defensively
+        func str(_ dict: [String: Any], _ key: String) -> String? {
+            if let s = dict[key] as? String { return s }
+            if let n = dict[key] as? NSNumber { return n.stringValue }
+            return nil
+        }
+        guard let accessToken = str(tokensDict, "access_token") else {
+            throw AuthError.serverError("Missing access_token")
+        }
+        let refreshToken = str(tokensDict, "refresh_token") ?? ""
+        let expiresIn: TimeInterval
+        if let n = tokensDict["expires_in"] as? NSNumber {
+            expiresIn = n.doubleValue
+        } else if let s = tokensDict["expires_in"] as? String, let d = Double(s) {
+            expiresIn = d
+        } else {
+            expiresIn = 3600
+        }
+
+        guard let id = str(profileDict, "id") else {
+            throw AuthError.serverError("Missing profile id")
+        }
+        let name = str(profileDict, "name") ?? "User"
+        let email = str(profileDict, "email")
+        let image = str(profileDict, "image")
+
+        let tokens = SessionTokens(accessToken: accessToken, refreshToken: refreshToken, expiresIn: expiresIn)
+        let profile = UserProfile(id: id, name: name, email: email, image: image)
+        return SessionPayload(tokens: tokens, profile: profile)
     }
 
     private static func extractCode(from callbackURL: URL) -> String? {

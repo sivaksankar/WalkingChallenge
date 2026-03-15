@@ -8,12 +8,37 @@ function isMobileBrowserFromUA(userAgent: string): boolean {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(userAgent);
 
   // Check for WebView indicators
-  // Capacitor WebView typically includes 'CriOS' on iOS or has special indicators
-  // SFSafariViewController shows as regular Safari
-  const isWebView = /CriOS|wv|WebView/.test(userAgent);
+  // Android WebView includes 'wv' or 'WebView'
+  // Capacitor on Android may just show as regular Chrome - we need to be more lenient
+  // iOS Safari View Controller shows as regular Safari
+  // CriOS = Chrome on iOS
+  const isWebView = /wv|WebView|CriOS/i.test(userAgent);
 
-  // If mobile but not showing WebView indicators, it's likely Safari/Chrome browser
-  return isMobile && !isWebView;
+  // On Android, if it's Chrome but NOT explicitly showing as browser-launched
+  // (no 'SamsungBrowser', 'Firefox', 'Opera', etc.), it might be a WebView
+  // This is a heuristic - we want to avoid false positives that break native app experience
+  const isAndroidChrome = /Android.*Chrome/i.test(userAgent);
+  const isExplicitBrowser = /SamsungBrowser|Firefox|Opera|Edge|Brave/i.test(userAgent);
+
+  // Consider it a WebView if:
+  // 1. Has explicit WebView indicators, OR
+  // 2. Is Android Chrome without explicit third-party browser indicators
+  //    (Capacitor WebView uses Chrome engine but may not always have 'wv')
+  const likelyWebView = isWebView || (isAndroidChrome && !isExplicitBrowser);
+
+  // If mobile but showing as a standalone browser (Safari on iOS, explicit browsers),
+  // then it's a mobile browser, not a WebView
+  // For now, we'll be conservative and NOT redirect if we're unsure
+  // The landing page redirect is meant for Safari View Controller after OAuth,
+  // not for preventing native app access
+
+  // Only consider it a "mobile browser" if it's iOS Safari (not Chrome/CriOS)
+  // or an explicit third-party browser
+  const isIOSSafari = /iPhone|iPad|iPod/i.test(userAgent) &&
+                      /Safari/i.test(userAgent) &&
+                      !/CriOS|Chrome/i.test(userAgent);
+
+  return isMobile && (isIOSSafari || isExplicitBrowser);
 }
 
 // Check if this looks like it could be a fresh OAuth callback

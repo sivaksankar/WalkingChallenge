@@ -10,7 +10,8 @@ interface TokenResponse {
 }
 
 interface UserInfo {
-  sub: string;
+  sub?: string;  // v3/OIDC endpoint
+  id?: string;   // v2 endpoint
   name: string;
   picture?: string;
   email?: string;
@@ -20,12 +21,21 @@ export async function POST(request: NextRequest) {
   try {
     const { code, redirectUri } = await request.json();
 
-    if (!code || !redirectUri) {
+    console.log('[Mobile Auth Exchange] Received code exchange request');
+    console.log('[Mobile Auth Exchange] Code length:', code?.length);
+    console.log('[Mobile Auth Exchange] Redirect URI from client:', redirectUri);
+
+    if (!code) {
       return NextResponse.json(
-        { error: 'Missing code or redirectUri' },
+        { error: 'Missing authorization code' },
         { status: 400 }
       );
     }
+
+    // Use the server callback URL that was registered with Google
+    // The client sends their custom scheme, but we used the server callback for OAuth
+    const serverCallbackUrl = `${process.env.NEXTAUTH_URL}/api/mobile/auth/google/callback`;
+    console.log('[Mobile Auth Exchange] Using server callback URL:', serverCallbackUrl);
 
     // Exchange authorization code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -37,7 +47,7 @@ export async function POST(request: NextRequest) {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID!,
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-        redirect_uri: redirectUri,
+        redirect_uri: serverCallbackUrl, // Use server callback, not client's custom scheme
         grant_type: 'authorization_code',
       }),
     });
@@ -70,21 +80,24 @@ export async function POST(request: NextRequest) {
 
     const userInfo: UserInfo = await userInfoResponse.json();
 
-    // Return session payload compatible with Android app
+    // Return session payload compatible with iOS app
+    // IMPORTANT: Use snake_case because Swift decoder uses .convertFromSnakeCase
+    // All fields must be correct types for Swift Codable
     const sessionPayload = {
       tokens: {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-        expiresIn: Date.now() + (tokens.expires_in * 1000), // Convert to timestamp
+        access_token: String(tokens.access_token),
+        refresh_token: String(tokens.refresh_token || ''),
+        expires_in: Number(tokens.expires_in), // TimeInterval (Double) in Swift
       },
       profile: {
-        id: userInfo.sub,
-        name: userInfo.name,
-        image: userInfo.picture,
-        email: userInfo.email,
+        id: String(userInfo.sub || userInfo.id || ''), // v3 uses sub, v2 uses id
+        name: String(userInfo.name || 'User'),
+        image: userInfo.picture ? String(userInfo.picture) : null, // String URL or null
+        email: userInfo.email ? String(userInfo.email) : null,
       },
     };
 
+    console.log('[Mobile Auth Exchange] Session payload:', JSON.stringify(sessionPayload, null, 2));
     return NextResponse.json(sessionPayload);
   } catch (error) {
     console.error('Mobile auth exchange error:', error);

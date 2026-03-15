@@ -10,7 +10,7 @@ struct UserProfile: Codable {
     let id: String
     let name: String
     let email: String?
-    let image: URL?
+    let image: String?
 }
 
 struct SessionPayload: Codable {
