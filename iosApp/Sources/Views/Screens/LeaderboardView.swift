@@ -61,8 +61,17 @@ struct LeaderboardView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .overlay {
             if vm.isLoading { ProgressView() }
-            else if vm.leaderboard.isEmpty && !vm.isLoading {
-                ContentUnavailableView("No data yet", systemImage: "chart.bar", description: Text("Check back after steps sync"))
+            else if vm.leaderboard.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "chart.bar")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                    Text("No data yet")
+                        .font(.headline)
+                    Text("Check back after steps sync")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .task { await vm.load(session: session) }
