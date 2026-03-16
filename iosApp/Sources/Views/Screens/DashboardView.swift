@@ -6,6 +6,7 @@ struct DashboardView: View {
     let isHealthConnected: Bool
     let recentSteps: [DailyStep]
     let onSignOut: () -> Void
+    var onConnectHealth: (() -> Void)? = nil
 
     private var totalSteps: Int { recentSteps.reduce(0) { $0 + $1.steps } }
     private var todaySteps: Int { recentSteps.last?.steps ?? 0 }
@@ -36,10 +37,26 @@ struct DashboardView: View {
                             .foregroundColor(isHealthConnected ? .green : .secondary)
                     }
                     Spacer()
+                    if !isHealthConnected, let connect = onConnectHealth {
+                        Button("Connect", action: connect)
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                    }
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
+
+                if isHealthConnected && recentSteps.isEmpty {
+                    HStack {
+                        ProgressView()
+                        Text("Loading steps…")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                }
 
                 if isHealthConnected && !recentSteps.isEmpty {
                     // Today + 7-day total

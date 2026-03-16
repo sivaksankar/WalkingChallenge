@@ -47,7 +47,8 @@ struct RootView: View {
                         session: session,
                         isHealthConnected: authViewModel.isHealthConnected,
                         recentSteps: authViewModel.recentSteps,
-                        onSignOut: { authViewModel.signOut() }
+                        onSignOut: { authViewModel.signOut() },
+                        onConnectHealth: { authViewModel.requestHealthPermissions() }
                     )
                 }
                 .tabItem { Label("Home", systemImage: "house.fill") }
