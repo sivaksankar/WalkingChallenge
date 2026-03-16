@@ -36,6 +36,7 @@ final class AuthService: NSObject {
         self.urlSession = urlSession
     }
 
+    @MainActor
     func startSignIn() async throws -> AuthResponse {
         let authURL = authorizationURL()
         return try await withCheckedThrowingContinuation { continuation in

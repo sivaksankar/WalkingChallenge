@@ -3,20 +3,25 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0ABBB2F991E2CCD9FEBC2848 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB0F85BBE95F7CE254DBD4A /* ProfileView.swift */; };
 		1B78F762993053B174A2B967 /* SessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D2EADD5794BE566965513F /* SessionModels.swift */; };
 		1C42F2D342614AE8A96703BA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A63FBD3203CD77DB5DEA4D /* SessionStore.swift */; };
 		27916290029243195C3E4C98 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0DC9184C79EAFED366C473 /* PrimaryButton.swift */; };
 		4DB84DCA5B6EA59184A182A6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D661B914A4A2C7269775F71C /* SignInView.swift */; };
 		5621AC6BC07EB38C43FA7913 /* HealthPermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B93ADBF761804E68FDF0A7 /* HealthPermissionsView.swift */; };
+		5C376E4CB403533937722F19 /* ChallengesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025D6FE2486B259BADDDEB36 /* ChallengesViewModel.swift */; };
 		5C851ED971E4669CF3229E03 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5945995A40B55EBD94DB49BC /* AuthService.swift */; };
 		8109BC3AA32C628C561B54C4 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B47704067A20278EF8D943 /* SplashView.swift */; };
 		89E5886C48EE30EFB61B6646 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746752C7EF5E2D6DA5A8CB5E /* RootView.swift */; };
+		8AE2BFFF4B6E09A4A860EADD /* ChallengeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3166EFA0569B814EE98C8A /* ChallengeModels.swift */; };
+		9FFB3A4D44B6DC9491FA8B34 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEDC0C3EFB7E29AD825495EB /* LeaderboardView.swift */; };
 		A7001666B30FBC873BC566F9 /* SamsungHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0E6E85CA52DB4D1303AA9D /* SamsungHealthManager.swift */; };
 		BA0A26C83A190BFA00D441F4 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD05363D5AA90E11090DB9C /* DashboardView.swift */; };
+		BCB8AA22AC8CF8156CB9689B /* ChallengesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA30A08742BED5E98E5E9A6 /* ChallengesView.swift */; };
 		DC27F4A3002D0D1E9D49B87D /* AuthConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE26857D4A44F70855AB5D8 /* AuthConfiguration.swift */; };
 		DDA239CD65E5FDA564E2BD1C /* WalkingChallengeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D722935DE66753BC2B34D4AC /* WalkingChallengeApp.swift */; };
 		E1EC110396BA87EA4A5F3D84 /* AppleHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0A83DB1D44C1C6AA60385 /* AppleHealthManager.swift */; };
@@ -24,7 +29,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		29FC585459A8981069CC96FA /* WalkingChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalkingChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		025D6FE2486B259BADDDEB36 /* ChallengesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengesViewModel.swift; sourceTree = "<group>"; };
+		1A3166EFA0569B814EE98C8A /* ChallengeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeModels.swift; sourceTree = "<group>"; };
+		29FC585459A8981069CC96FA /* WalkingChallenge.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WalkingChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2BB0F85BBE95F7CE254DBD4A /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		4FC0A83DB1D44C1C6AA60385 /* AppleHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthManager.swift; sourceTree = "<group>"; };
 		5945995A40B55EBD94DB49BC /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		5E0DC9184C79EAFED366C473 /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
@@ -33,7 +41,9 @@
 		7F515C60C5A067C44A4594D3 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		80D2EADD5794BE566965513F /* SessionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionModels.swift; sourceTree = "<group>"; };
 		86B47704067A20278EF8D943 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		8CA30A08742BED5E98E5E9A6 /* ChallengesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengesView.swift; sourceTree = "<group>"; };
 		A44C170E2250ACBEA388D4C5 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		AEDC0C3EFB7E29AD825495EB /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
 		BB0E6E85CA52DB4D1303AA9D /* SamsungHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamsungHealthManager.swift; sourceTree = "<group>"; };
 		CAE26857D4A44F70855AB5D8 /* AuthConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthConfiguration.swift; sourceTree = "<group>"; };
 		D2A63FBD3203CD77DB5DEA4D /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
@@ -47,12 +57,24 @@
 		1B06F10304D6E75AD0609C49 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				8CA30A08742BED5E98E5E9A6 /* ChallengesView.swift */,
 				7AD05363D5AA90E11090DB9C /* DashboardView.swift */,
 				E5B93ADBF761804E68FDF0A7 /* HealthPermissionsView.swift */,
+				AEDC0C3EFB7E29AD825495EB /* LeaderboardView.swift */,
+				2BB0F85BBE95F7CE254DBD4A /* ProfileView.swift */,
 				D661B914A4A2C7269775F71C /* SignInView.swift */,
 				86B47704067A20278EF8D943 /* SplashView.swift */,
 			);
 			path = Screens;
+			sourceTree = "<group>";
+		};
+		2B4555AFDCF91FC018E006C6 /* Challenges */ = {
+			isa = PBXGroup;
+			children = (
+				1A3166EFA0569B814EE98C8A /* ChallengeModels.swift */,
+				025D6FE2486B259BADDDEB36 /* ChallengesViewModel.swift */,
+			);
+			path = Challenges;
 			sourceTree = "<group>";
 		};
 		358B8B240F2B81B9CC762EE8 /* Session */ = {
@@ -106,6 +128,7 @@
 				EB7445209ECF825838A2BB0E /* App */,
 				D4F196B39BC66445A98E8CE1 /* AppleHealth */,
 				B8166DB3DEF96518F9305677 /* Authentication */,
+				2B4555AFDCF91FC018E006C6 /* Challenges */,
 				D4D2706597A065BCEC6057ED /* SamsungHealth */,
 				358B8B240F2B81B9CC762EE8 /* Session */,
 				D8F0582F06E43185321E19A4 /* Views */,
@@ -182,7 +205,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = "Walking Challenge";
 				TargetAttributes = {
 					00A486230D2F93AA5DF03E12 = {
@@ -200,6 +223,7 @@
 			);
 			mainGroup = 9D1CF097C55FAC5545559274;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -217,9 +241,14 @@
 				DC27F4A3002D0D1E9D49B87D /* AuthConfiguration.swift in Sources */,
 				5C851ED971E4669CF3229E03 /* AuthService.swift in Sources */,
 				E81661E7009816BD2967ECE4 /* AuthViewModel.swift in Sources */,
+				8AE2BFFF4B6E09A4A860EADD /* ChallengeModels.swift in Sources */,
+				BCB8AA22AC8CF8156CB9689B /* ChallengesView.swift in Sources */,
+				5C376E4CB403533937722F19 /* ChallengesViewModel.swift in Sources */,
 				BA0A26C83A190BFA00D441F4 /* DashboardView.swift in Sources */,
 				5621AC6BC07EB38C43FA7913 /* HealthPermissionsView.swift in Sources */,
+				9FFB3A4D44B6DC9491FA8B34 /* LeaderboardView.swift in Sources */,
 				27916290029243195C3E4C98 /* PrimaryButton.swift in Sources */,
+				0ABBB2F991E2CCD9FEBC2848 /* ProfileView.swift in Sources */,
 				89E5886C48EE30EFB61B6646 /* RootView.swift in Sources */,
 				A7001666B30FBC873BC566F9 /* SamsungHealthManager.swift in Sources */,
 				1B78F762993053B174A2B967 /* SessionModels.swift in Sources */,
@@ -270,11 +299,9 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 5WQNZ7HVT9;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -289,7 +316,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -350,11 +376,9 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 5WQNZ7HVT9;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -376,7 +400,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
 			};
