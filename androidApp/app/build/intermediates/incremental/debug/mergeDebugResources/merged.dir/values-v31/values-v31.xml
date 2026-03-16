@@ -202,6 +202,9 @@
     <color name="material_dynamic_tertiary90">@color/m3_ref_palette_dynamic_tertiary90</color>
     <color name="material_dynamic_tertiary95">@color/m3_ref_palette_dynamic_tertiary95</color>
     <color name="material_dynamic_tertiary99">@color/m3_ref_palette_dynamic_tertiary99</color>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+    </style>
     <style name="Theme.Material3.DynamicColors.Dark" parent="Theme.Material3.Dark">
     <item name="isMaterial3DynamicColorApplied">true</item>
 
@@ -332,6 +335,9 @@
     <item name="android:textColorHighlightInverse">@color/m3_dynamic_dark_highlighted_text</item>
     <item name="android:textColorAlertDialogListItem">@color/m3_dynamic_default_color_primary_text</item>
   </style>
+    <style name="Theme.SplashScreen" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowSplashScreenBackground">?android:colorBackground</item>
+    </style>
     <style name="ThemeOverlay.Material3.DynamicColors.Dark" parent="">
     <item name="isMaterial3DynamicColorApplied">true</item>
 

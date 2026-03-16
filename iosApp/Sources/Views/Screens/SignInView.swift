@@ -39,5 +39,6 @@ struct SignInView: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 32)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }

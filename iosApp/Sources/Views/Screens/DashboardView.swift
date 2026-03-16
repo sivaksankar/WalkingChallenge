@@ -14,17 +14,12 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 16) {
                 // Header
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Welcome back")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(session.user.name)
-                            .font(.title.bold())
-                    }
-                    Spacer()
-                    Button("Sign Out", action: onSignOut)
-                        .buttonStyle(.bordered)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Welcome back")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(session.user.name)
+                        .font(.title.bold())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -91,6 +86,13 @@ struct DashboardView: View {
             .padding(24)
         }
         .navigationTitle("Dashboard")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Sign Out", action: onSignOut)
+            }
+        }
     }
 
     private func statCard(title: String, value: String, icon: String) -> some View {

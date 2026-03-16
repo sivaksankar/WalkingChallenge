@@ -47,6 +47,11 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    // Hilt for DI (added to ensure Application class is processed)
+    implementation "com.google.dagger:hilt-android:2.50"
+    annotationProcessor "com.google.dagger:hilt-android-compiler:2.50"
+    // Apply Hilt Gradle plugin behavior
+    apply plugin: 'dagger.hilt.android.plugin'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

@@ -8,7 +8,20 @@
         android:minSdkVersion="26"
         android:targetSdkVersion="34" />
 
+    <!-- Permissions -->
+
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Health Connect permissions -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+
+    <!-- For Health Connect activity intent -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -22,7 +35,7 @@
 
     <application
         android:name="com.walkingchallenge.app.WalkingChallengeApp"
-        android:allowBackup="false"
+        android:allowBackup="true"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true"
         android:extractNativeLibs="false"
@@ -31,17 +44,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:testOnly="true"
-        android:theme="@style/Theme.WalkingChallenge" >
+        android:theme="@style/AppTheme" >
         <activity
             android:name="com.walkingchallenge.app.MainActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.WalkingChallenge" >
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBarLaunch" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Deep link for OAuth callback to return control to the app WebView -->
             <intent-filter android:autoVerify="true" >
                 <action android:name="android.intent.action.VIEW" />
 
@@ -49,27 +66,31 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="auth"
-                    android:path="/callback"
-                    android:scheme="walkingchallenge" />
-            </intent-filter>
-            <intent-filter android:autoVerify="true" >
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="app.walkingchallenge.com"
-                    android:pathPrefix="/auth/callback"
+                    android:host="nextjs-app-409798850238.us-central1.run.app"
+                    android:pathPrefix="/"
                     android:scheme="https" />
+            </intent-filter>
+
+            <!-- Mobile OAuth deep link for custom scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="walkingchallenge" />
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="asset_statements"
-            android:resource="@xml/asset_statements" />
-
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.walkingchallenge.app.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="com.walkingchallenge.app.androidx-startup"

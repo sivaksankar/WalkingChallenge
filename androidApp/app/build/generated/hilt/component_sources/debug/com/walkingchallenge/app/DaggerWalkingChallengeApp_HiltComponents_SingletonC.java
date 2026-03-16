@@ -578,7 +578,7 @@ public final class DaggerWalkingChallengeApp_HiltComponents_SingletonC {
     }
 
     @Override
-    public void injectWalkingChallengeApp(WalkingChallengeApp walkingChallengeApp) {
+    public void injectWalkingChallengeApp(WalkingChallengeApp arg0) {
     }
 
     @Override

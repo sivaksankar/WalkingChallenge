@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.walkingchallenge.app-mergeDebugResources-68:/values-hdpi-v4/values-hdpi-v4.xml",
+            "outputFile": "com.walkingchallenge.app-mergeDebugResources-76:/values-hdpi-v4/values-hdpi-v4.xml",
             "map": [
                 {
-                    "source": "/Users/devi/.gradle/caches/8.9/transforms/35eae96146b81dbad4b664d95aa2455f/transformed/appcompat-1.6.1/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "source": "/Users/devi/.gradle/caches/8.9/transforms/9222c2650b089aed896141a725318995/transformed/appcompat-1.6.1/res/values-hdpi-v4/values-hdpi-v4.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

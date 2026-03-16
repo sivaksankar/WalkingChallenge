@@ -10,7 +10,7 @@ public final class BuildConfig {
   public static final int VERSION_CODE = 1;
   public static final String VERSION_NAME = "1.0.0";
   // Field from default config.
-  public static final String API_BASE_URL = "https://nextjs-app-maiqzzrcja-uc.a.run.app/";
+  public static final String API_BASE_URL = "https://walking-challenge-cd6dd.web.app/";
   // Field from default config.
-  public static final String WEB_BASE_URL = "https://nextjs-app-maiqzzrcja-uc.a.run.app/";
+  public static final String WEB_BASE_URL = "https://walking-challenge-cd6dd.web.app/";
 }

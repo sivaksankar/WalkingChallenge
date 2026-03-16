@@ -12,5 +12,6 @@ struct SplashView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemBackground))
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
